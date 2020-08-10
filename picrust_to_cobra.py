@@ -1,11 +1,11 @@
 # %% codecell
 from __future__ import print_function
+from corrected_datasets import eqtr_metacyc_map, corrected_stoichiometry, corrected_metabolites
 import os
 import pandas as pd
 import cobra
 import pythoncyc as pcyc
 import equilibrator_api as eqtr
-from corrected_datasets import eqtr_metacyc_map, corrected_stoichiometry, corrected_metabolites
 
 
 class idNotFoundError(Exception):
@@ -22,12 +22,12 @@ cc.p_mg = eqtr.Q_(3.0)
 cc.ionic_strength = eqtr.Q_("0.25M")
 cc.temperature = eqtr.Q_("298.15K")
 
-eqtr_metacyc_map.set_index('equilibrator', inplace=True)
 
 metacyc_db = pcyc.select_organism('meta')
 all_pathways = metacyc_db.all_pathways()
 
-os.chdir('/home/alexis/UAM/Cobra')
+os.chdir('/home/alexis/UAM/cobra')
+eqtr_metacyc_map.set_index('equilibrator', inplace=True)
 pathways = pd.read_csv('pathways.csv')
 pathways.drop(columns=['Unnamed: 0'], inplace=True)
 pathways = pathways.iloc[:, 0].to_list()
@@ -439,4 +439,3 @@ print(str(len(transport_rxns)) + ' reactions are transport reactions')
 print(str(len(multi_compartment_rxns)) + ' reactions are multicompartment reactions')
 print(str(len(should_be_balanced_rxns)) + ' reactions are wrongly annotated')
 print(str(len(proton_unbalanced_rxns)) + ' reactions are H+ unbalanced')
-print(str(len(unbalanced_rxns)) + ' reactions are unbalanced')
