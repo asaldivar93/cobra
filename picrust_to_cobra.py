@@ -1,441 +1,179 @@
+# missing method to claculate dg of transport reactions and multicompartment reactions
+# missing sparsefba
 # %% codecell
-from __future__ import print_function
-from corrected_datasets import eqtr_metacyc_map, corrected_stoichiometry, corrected_metabolites
-import os
+from tqdm import tqdm
 import pandas as pd
 import cobra
-import pythoncyc as pcyc
-import equilibrator_api as eqtr
-
-
-class idNotFoundError(Exception):
-    pass
-
-
-class dbLinksMissingError(Exception):
-    pass
-
-
-cc = eqtr.ComponentContribution()
-cc.p_h = eqtr.Q_(7.4)
-cc.p_mg = eqtr.Q_(3.0)
-cc.ionic_strength = eqtr.Q_("0.25M")
-cc.temperature = eqtr.Q_("298.15K")
-
-
-metacyc_db = pcyc.select_organism('meta')
-all_pathways = metacyc_db.all_pathways()
-
-os.chdir('/home/alexis/UAM/cobra')
-eqtr_metacyc_map.set_index('equilibrator', inplace=True)
-pathways = pd.read_csv('pathways.csv')
-pathways.drop(columns=['Unnamed: 0'], inplace=True)
-pathways = pathways.iloc[:, 0].to_list()
-
-conc_of_mets = pd.read_csv('metabolites_w_con.csv')
-for i in conc_of_mets.index:
-    try:
-        conc_of_mets.loc[i, 'InChl'] = conc_of_mets.loc[i, 'InChl'].replace('InChI=', '')
-    except AttributeError:
-        pass
-conc_of_mets.drop_duplicates('InChl', keep='first', inplace=True)
-conc_of_mets.dropna(inplace=True)
-conc_of_mets.set_index('InChl', inplace=True)
+from data_files.corrected_datasets import multi_comp_rxns, curated_rxns, exchange_rxns
+import picrust_parser as pparser
+balanced_rxns = pd.read_csv('data_files/balanced_rxns.csv', header=None, dtype='str')
+balanced_rxns = balanced_rxns.iloc[:, 0].to_list()
+ignore_massbalance = pd.read_csv('data_files/ignore_massbalance.csv', header=None, dtype='str')
+ignore_massbalance = ignore_massbalance.iloc[:, 0].to_list()
 
 # %% codecell
 model = cobra.Model()
-mets_wo_info = []
-transport_rxns = []
-multi_compartment_rxns = []
-mets_wo_thermo_info = []
-mets_w_concentration = []
-rxns_wo_thermo_info = pd.DataFrame()
-should_be_balanced_rxns = []
-unbalanced_rxns = []
-unmatched_pthwys = []
-proton_unbalanced_rxns = []
+pc = pparser.p_model()
+for ex_rxn in exchange_rxns.keys():
+    if ex_rxn not in model.reactions:
+        subsystem = exchange_rxns[ex_rxn]['pathway']
+        stoichiometry = exchange_rxns[ex_rxn]['stoichiometry']
+        reversible = exchange_rxns[ex_rxn]['reversible']
+        direction = exchange_rxns[ex_rxn]['direction']
+        pc.add_rxn_from_stoichiometry(model, subsystem, ex_rxn, stoichiometry, reversible, direction)
 
-
-n = 0
-step = 0.1
-for pthwy in pathways:
-    n += 1
-    if n / len(pathways) > step:
-        step += 0.1
-        print(str(n) + ' pathways parsed %3.2f completed' % (n / len(pathways) * 100))
-
+for i in tqdm(range(int(len(pc.pathways)))):
+    pthwy = pc.pathways[i]
     pthwy_id = '|' + pthwy + '|'
-    if pthwy_id in all_pathways:
-        for rxn_id in metacyc_db[pthwy_id].reaction_list:
-            # List of compartments
-            compartments = []
-            for comp in metacyc_db.compartments_of_reaction(rxn_id):
-                compartments.extend([comp.replace('|', '').replace('CCO-', '').lower()])
-
-            if len(compartments) > 1 and (not metacyc_db.reaction_type(rxn_id) == '|TRANSPORT|'):
-                multi_compartment_rxns.extend([rxn_id])
-            elif metacyc_db.reaction_type(rxn_id) == '|TRANSPORT|':
-                transport_rxns.extend([rxn_id])
+    if pthwy_id in pparser.all_pathways:
+        for rxn_id in pparser.metacyc_db[pthwy_id].reaction_list:
+            substrates = pparser.metacyc_db.reaction_reactants_and_products(rxn_id, pwy=pthwy_id)
+            if not all(substrates):
+                pass
+            elif rxn_id in curated_rxns.keys():
+                if rxn_id not in model.reactions:
+                    subsystem = curated_rxns[rxn_id]['pathway']
+                    stoichiometry = curated_rxns[rxn_id]['stoichiometry']
+                    reversible = curated_rxns[rxn_id]['reversible']
+                    direction = curated_rxns[rxn_id]['direction']
+                    pc.add_rxn_from_stoichiometry(model, subsystem, rxn_id, stoichiometry, reversible, direction)
             else:
-                # Dictionary of reactants and products
-                substrates = metacyc_db.reaction_reactants_and_products(rxn_id, pwy=pthwy_id)
-                if not substrates:
-                    substrates = [metacyc_db[rxn_id].left,
-                                  metacyc_db[rxn_id].right]
+                # Create a list of compartments of reaction
+                comps_of_rxn = []
+                for compartment in pparser.metacyc_db.compartments_of_reaction(rxn_id):
+                    compartment = compartment.replace('|', '').replace('CCO-', '').lower()
+                    if compartment == 'peri-bac' or compartment == 'out' or compartment == 'pm-bac-neg':
+                        compartment = 'periplasm'
+                    elif compartment == 'in':
+                        compartment = 'cytosol'
+                    comps_of_rxn.extend([compartment])
+                    if compartment not in pc.compartments:
+                        pc.compartments.extend([compartment])
 
-                mets_in_reaction = dict(zip(['reactants', 'products'],
-                                            substrates))
-
-                # List of metabolites
-                metabolites = mets_in_reaction['reactants'].copy()
-                metabolites.extend(mets_in_reaction['products'])
-                comp = '_' + compartments[0][0:2]
-
-                for met in metabolites:
-                    met_id = met + comp
-                    if met_id in model.metabolites:
-                        pass
+                # Multicompartment and transport rxns need to be parsed manually
+                # If rxn is multicompartment
+                if len(comps_of_rxn) > 1:
+                    if rxn_id in multi_comp_rxns.keys():
+                        if rxn_id not in model.reactions:
+                            subsystem = multi_comp_rxns[rxn_id]['pathway']
+                            stoichiometry = multi_comp_rxns[rxn_id]['stoichiometry']
+                            reversible = multi_comp_rxns[rxn_id]['reversible']
+                            direction = multi_comp_rxns[rxn_id]['direction']
+                            pc.add_rxn_from_stoichiometry(model, subsystem, rxn_id, stoichiometry, reversible, direction)
+                            pc.multi_compartment_rxns.append([pthwy_id, rxn_id, 'added'])
                     else:
-                        thermo_info = False
-                        inchi_flag = False
-                        db_flag = False
-                        if metacyc_db[met].inchi_key:
-                            inchi_flag = True
-                            eqtr_met = cc.search_compound_by_inchi_key(metacyc_db[met].inchi_key.replace('InChIKey=', ''))
-                            if eqtr_met:
-                                eqtr_met = cc.get_compound_by_internal_id(eqtr_met[0].id)
-                                thermo_info = True
-                            else:
-                                try:
-                                    if metacyc_db[met].dblinks:
-                                        db_flag = True
-                                    else:
-                                        raise dbLinksMissingError
-                                except dbLinksMissingError:
-                                    db_flag = False
-                                    thermo_info = False
-
-                        else:
-                            inchi_flag = False
-                            try:
-                                if metacyc_db[met].dblinks:
-                                    db_flag = True
-                                else:
-                                    raise dbLinksMissingError
-                            except dbLinksMissingError:
-                                db_flag = False
-                                thermo_info = False
-
-                        if db_flag:
-                            filter_db = [db in metacyc_db[met].dblinks.keys() for db in eqtr_metacyc_map['metacyc']]
-                            dblinks = {}
-                            for db in eqtr_metacyc_map.loc[filter_db, 'metacyc'].index:
-                                dblinks[db] = metacyc_db[met].dblinks[eqtr_metacyc_map.loc[db, 'metacyc']][0]
-
-                            for db in dblinks.keys():
-                                cid = db + ':' + dblinks[db]
-                                eqtr_met = cc.get_compound(cid)
-                                if eqtr_met:
-                                    thermo_info = True
-                                    break
-                                else:
-                                    thermo_info = False
-                        elif not db_flag:
-                            dblinks = {}
-
-                        if thermo_info:
-                            if metacyc_db[met].chemical_formula:
-                                elemnts = metacyc_db[met].chemical_formula.copy()
-                                formula = ''
-                                for key in elemnts.keys():
-                                    formula += key.replace('|', '') + str(elemnts[key][0])
-                            else:
-                                formula = eqtr_met.formula
-                            charge = eqtr_met.net_charge
-                            name = eqtr_met.get_common_name()
-                            smiles = eqtr_met.smiles
-                            dblinks = {}
-                            database_old = []
-                            for link in eqtr_met.identifiers:
-                                database_new = link.registry.namespace
-                                if database_new == database_old:
-                                    pass
-                                else:
-                                    dblinks[database_new] = link.accession
-                                database_old = database_new
-                        elif not thermo_info:
-                            if metacyc_db[met].chemical_formula:
-                                elemnts = metacyc_db[met].chemical_formula.copy()
-                                charge = []
-                                name = metacyc_db[met].common_name
-                                smiles = metacyc_db[met].smiles
-                                formula = ''
-                                for key in elemnts.keys():
-                                    formula += key.replace('|', '') + str(elemnts[key][0])
-                                mets_wo_thermo_info.extend([met_id])
-                            else:
-                                charge = []
-                                name = metacyc_db[met].common_name
-                                smiles = metacyc_db[met].smiles
-                                formula = ''
-                                mets_wo_info.extend([met_id])
-
-                        if inchi_flag:
-                            inchi = metacyc_db[met].inchi.replace('InChI=', '')
-                            inchi_key = metacyc_db[met].inchi_key.replace('InChIKey=', '')
-                        else:
-                            inchi = ''
-                            inchi_key = ''
-
-                        if inchi in conc_of_mets.index:
-                            mets_w_concentration.extend([met_id])
-                            lb = conc_of_mets.loc[inchi, 'lb']
-                            ub = conc_of_mets.loc[inchi, 'ub']
-                            mean = conc_of_mets.loc[inchi, 'lb']
-                        else:
-                            lb = 1e-5
-                            ub = 0.01
-                            mean = 0
-
-                        if not formula:
-                            if smiles:
-                                formula = str('C' + str(smiles.count('C')) +
-                                              'H' + str(smiles.count('H')) +
-                                              'O' + str(smiles.count('O')) +
-                                              'N' + str(smiles.count('N')) +
-                                              'S' + str(smiles.count('S'))
-                                              )
-                        if met in corrected_metabolites.keys():
-                            formula = corrected_metabolites[met]['formula']
-
-                        structure_atoms = metacyc_db[met].structure_atoms
-                        structure_bonds = metacyc_db[met].structure_bonds
-                        met_to_add = cobra.Metabolite(met_id,
-                                                      formula=formula,
-                                                      compartment=compartments[0],
-                                                      name=name)
-                        met_to_add.annotation = {'dblinks': dblinks,
-                                                 'InChI': inchi,
-                                                 'InChIKey': inchi_key,
-                                                 'smiles': smiles,
-                                                 'structure_atoms': structure_atoms,
-                                                 'structure_bonds': structure_bonds,
-                                                 'lb': lb,
-                                                 'ub': ub,
-                                                 'mean': mean}
-
-                        model.add_metabolites(met_to_add)
-
-                metabolites = [met + comp for met in metabolites]
-                if rxn_id in model.reactions:
-                    rxn = model.reactions.get_by_id(rxn_id)
-                    rxn.subsystem = rxn.subsystem + ' ' + pthwy_id
+                        pc.multi_compartment_rxns.append([pthwy_id, rxn_id])
                 else:
-                    # Add reaction
-                    rxn_to_add = cobra.Reaction(rxn_id)
-                    model.add_reaction(rxn_to_add)
+                    # Create a Dictionary of reactants and products
+                    substrates = pparser.metacyc_db.reaction_reactants_and_products(rxn_id, pwy=pthwy_id)
+                    if not substrates:
+                        substrates = [pparser.metacyc_db[rxn_id].left,
+                                      pparser.metacyc_db[rxn_id].right]
+                    mets_in_reaction = dict(zip(['reactants', 'products'],
+                                                substrates))
 
-                    # Add Stoichiometry
-                    if rxn_id in corrected_stoichiometry.keys():
-                        stoichiometry = corrected_stoichiometry[rxn_id]['stoichiometry']
+                    # Create a List of metabolites in the reaction
+                    metabolites = mets_in_reaction['reactants'].copy()
+                    metabolites.extend(mets_in_reaction['products'])
+                    # Replace metabolites that fall under the redox_pairs class
+                    metabolites = pc.replace_redox_pairs(metabolites)
+
+                    comp = '_' + comps_of_rxn[0][0:2]
+                    # For every metabolite in reaction
+                    for met in metabolites:
+                        # Create id with corresponding compartment
+                        met_id = met + comp
+                        # If the metabolite isn't in the model already
+                        if met_id not in model.metabolites:
+                            # Parse metabolite info
+                            met_to_add = pc.parse_metabolite(met, comp)
+                            met_to_add.compartment = comps_of_rxn[0]
+                            # add metabolite
+                            model.add_metabolites(met_to_add)
+                    # Update metabolites list with the corresponding compartment
+                    metabolites = [met + comp for met in metabolites]
+
+                    # if reaction already in model
+                    if rxn_id in model.reactions:
+                        # add_ subsystem to reaction
+                        rxn = model.reactions.get_by_id(rxn_id)
+                        rxn.subsystem = rxn.subsystem + ' ' + pthwy_id
                     else:
-                        coefficients = []
-                        for susbstrate in mets_in_reaction['reactants']:
-                            coefficients.extend([-1])
-                        for product in mets_in_reaction['products']:
-                            coefficients.extend([1])
-                        stoichiometry = dict(zip(metabolites,
-                                                 coefficients))
-                    rxn_to_add.add_metabolites(stoichiometry)
+                        # Add reaction
+                        rxn_to_add = cobra.Reaction(rxn_id)
+                        model.add_reaction(rxn_to_add)
 
-                    # Check if metabolites have thermodynamic info
-                    mets_w_thermo_info = [met.id not in mets_wo_thermo_info and met.id not in mets_wo_info for met in rxn_to_add.metabolites]
+                        # Add Stoichiometry
+                        stoichiometry = pc.parse_stoichiometry(model, rxn_id, mets_in_reaction, metabolites)
+                        rxn_to_add.add_metabolites(stoichiometry)
 
-                    # Contra-intuitive check-mass_balance returns false when reaction is mass_balanced
-                    mass_balanced = rxn_to_add.check_mass_balance()
-                    if not mass_balanced:
-                        # if all metabolites have thermo info
-                        if all(mets_w_thermo_info):
-                            met_conc_lb = []
-                            met_conc_ub = []
-
-                            reactants_string = []
-                            for reactant in rxn_to_add.reactants:
-                                coeff = str(-stoichiometry[reactant.id])
-                                try:
-                                    db = list(reactant.annotation['dblinks'].keys())[0]
-                                    db_id = reactant.annotation['dblinks'][db]
-                                    db_link = db + ':' + db_id
-                                    compound = cc.get_compound(db_link)
-                                    if not compound:
-                                        raise idNotFoundError
-                                except idNotFoundError:
-                                    found = []
-                                    print(db_link + ' not found in compund cache, searching by next id')
-                                    for db in reactant.annotation['dblinks'].keys():
-                                        db_id = reactant.annotation['dblinks'][db]
-                                        db_link = db + ':' + db_id
-                                        compound = cc.get_compound(db_link)
-                                        if compound:
-                                            print('compund found')
-                                            found = True
-                                            break
-                                        else:
-                                            found = False
-                                    if not found:
-                                        print(db_link + ' not found by any id')
-
-                                reactants_string.extend([coeff + ' ' + db_link])
-                                met_conc_lb.extend([(db_link, reactant.annotation['lb'])])
-                                met_conc_ub.extend([(db_link, reactant.annotation['ub'])])
-
-                            products_string = []
-                            for product in rxn_to_add.products:
-                                try:
-                                    db = list(product.annotation['dblinks'].keys())[0]
-                                    db_id = product.annotation['dblinks'][db]
-                                    db_link = db + ':' + db_id
-                                    compound = cc.get_compound(db_link)
-                                    if not compound:
-                                        raise idNotFoundError
-                                except idNotFoundError:
-                                    found = []
-                                    print(db_link + ' not found in compund cache, searching by next id')
-                                    for db in product.annotation['dblinks'].keys():
-                                        db_id = product.annotation['dblinks'][db]
-                                        db_link = db + ':' + db_id
-                                        compound = cc.get_compound(db_link)
-                                        if compound:
-                                            print('compund found')
-                                            found = True
-                                            break
-                                        else:
-                                            found = False
-                                    if not found:
-                                        print(db_link + ' not found by any id')
-
-                                products_string.extend([coeff + ' ' + db_link])
-                                met_conc_lb.extend([(db_link, product.annotation['ub'])])
-                                met_conc_ub.extend([(db_link, product.annotation['lb'])])
-
-                            # Calculate dG_low and dG_high
-                            reaction_string = ' + '.join(reactants_string) + \
-                                ' -> ' + ' + '.join(products_string)
-                            eqtr_rxn = cc.parse_reaction_formula(reaction_string)
-
-                            for cid, conc in met_conc_lb:
-                                try:
-                                    compound = cc.get_compound(cid)
-                                    eqtr_rxn.set_phase(compound, 'aqueous')
-                                except:
-                                    met_conc_lb.remove((cid, conc))
-
-                            for cid, conc in met_conc_ub:
-                                try:
-                                    compound = cc.get_compound(cid)
-                                    eqtr_rxn.set_phase(compound, 'aqueous')
-                                except:
-                                    met_conc_ub.remove((cid, conc))
-
-                            for cid, conc in met_conc_lb:
-                                compound = cc.get_compound(cid)
-                                if compound.formula == 'H':
-                                    pass
-                                else:
-                                    abundance = eqtr.Q_(conc, "M")
-                                    eqtr_rxn.set_abundance(compound, abundance)
-
-                            try:
-                                dG_lb = cc.dg_prime(eqtr_rxn)
-                                dG_flag = True
-                            except Exception as e:
-                                print(e)
-                                woti = pd.Series([met.id for met in rxn_to_add.metabolites])
-                                rxns_wo_thermo_info.loc[rxn_id, 'metabolites'] = ' '.join(
-                                    woti.loc[[not flag for flag in mets_w_thermo_info]])
-                                dG_lb = []
-                                dG_flag = False
-
-                            for cid, conc in met_conc_ub:
-                                compound = cc.get_compound(cid)
-                                if compound.formula == 'H':
-                                    pass
-                                else:
-                                    abundance = eqtr.Q_(conc, "M")
-                                    eqtr_rxn.set_abundance(compound, abundance)
-                            try:
-                                dG_ub = cc.dg_prime(eqtr_rxn)
-                            except:
-                                pass
-
-                            # Add reversibility constrains
-                            if dG_flag:
-                                if (dG_lb < 0) and (dG_lb < 0):
-                                    lower_bound = 0
-                                    upper_bound = 100
-                                elif (dG_lb > 0) and (dG_lb > 0):
-                                    lower_bound = -100
-                                    upper_bound = 0
-                                else:
-                                    lower_bound = -100
-                                    upper_bound = 100
-                            else:
-                                lower_bound = -100
-                                upper_bound = 100
+                        # Contra-intuitive check_mass_balance returns false when reaction is mass_balanced
+                        # If rxn is in list of known balanced rxns
+                        if rxn_id in balanced_rxns or rxn_id in ignore_massbalance:
+                            # then mass_balanced = True
+                            mass_balanced = {}
                         else:
-                            woti = pd.Series([met.id for met in rxn_to_add.metabolites])
-                            rxns_wo_thermo_info.loc[rxn_id, 'metabolites'] = ' '.join(
-                                woti.loc[[not flag for flag in mets_w_thermo_info]])
+                            # else check mass balace of rxn
+                            mass_balanced = rxn_to_add.check_mass_balance()
+
+                        # update Stoichiometry
+                        # If reaction is unbalanced by equal H and charge
+                        unbalanced_elements = list(mass_balanced.keys())
+                        if len(unbalanced_elements) == 2 and ('charge' in unbalanced_elements and 'H' in unbalanced_elements):
+                            if mass_balanced['charge'] == mass_balanced['H']:
+                                # and if H+ is one of the metabolites
+                                if '|PROTON|' + comp in stoichiometry.keys():
+                                    # Then Rxn can be balanced by the addition of H+
+                                    rxn_to_add.add_metabolites({'|PROTON|' + comp: -mass_balanced['H']})
+                                    mass_balanced = rxn_to_add.check_mass_balance()
+                                    pc.corrected_hc_rxns.extend([rxn_id])
+
+                        # If rxn is mass_balanced
+                        if not mass_balanced:
+                            lower_bound, upper_bound, dG_lb, dG_ub, ri_lb, ri_ub = pc.add_thermo_constraints(rxn_to_add)
+                        # if rxn is not mass balanced
+                        else:
+                            pc.classify_unbalanced_rxn(rxn_to_add)
+                            # set rxn as irreversible
                             dG_lb = []
                             dG_ub = []
+                            ri_lb = []
+                            ri_ub = []
                             lower_bound = -100
                             upper_bound = 100
 
-                    else:
-                        if all(mets_w_thermo_info):
-                            pass
-                        else:
-                            woti = pd.Series([met.id for met in rxn_to_add.metabolites])
-                            rxns_wo_thermo_info.loc[rxn_id, 'metabolites'] = ' '.join(
-                                woti.loc[[not flag for flag in mets_w_thermo_info]])
-                        unbalanced_elements = list(mass_balanced.keys())
-                        if len(unbalanced_elements) == 1 and unbalanced_elements[0] == 'H':
-                            proton_unbalanced_rxns.extend([rxn_id])
-                        elif metacyc_db[rxn_id].reaction_balance_status == '|BALANCED|':
-                            should_be_balanced_rxns.extend([rxn_id])
-                        else:
-                            unbalanced_rxns.extend([rxn_id])
+                        rxn_to_add.lower_bound = lower_bound
+                        rxn_to_add.upper_bound = upper_bound
+                        genes_of_reaction = [gene.replace('|', '')
+                                             for gene in pparser.metacyc_db.genes_of_reaction(rxn_id)]
+                        if genes_of_reaction:
+                            rxn_to_add.gene_reaction_rule = '( ' + ' or '.join(genes_of_reaction) + ' )'
 
-                        dG_lb = []
-                        dG_ub = []
-                        lower_bound = -100
-                        upper_bound = 100
-
-                    rxn_to_add.lower_bound = lower_bound
-                    rxn_to_add.upper_bound = upper_bound
-                    genes_of_reaction = [s.replace('|', '')
-                                         for s in metacyc_db.genes_of_reaction(rxn_id)]
-                    if genes_of_reaction:
-                        rxn_to_add.gene_reaction_rule = '( ' + ' or '.join(genes_of_reaction) + ' )'
-
-                    rxn_to_add.subsystem = pthwy_id
-                    atom_mappings = metacyc_db[rxn_id].atom_mappings
-                    ec_number = metacyc_db[rxn_id].ec_number
-                    dblinks = metacyc_db[rxn_id].dblinks
-                    rxn_to_add.annotation = {'atom_mappings': atom_mappings,
-                                             'ec_number': ec_number,
-                                             'dblinks': dblinks,
-                                             'dG_lb': dG_lb,
-                                             'dG_ub': dG_ub}
+                        rxn_to_add.subsystem = pthwy_id
+                        atom_mappings = pparser.metacyc_db[rxn_id].atom_mappings
+                        ec_number = pparser.metacyc_db[rxn_id].ec_number
+                        dblinks = pparser.metacyc_db[rxn_id].dblinks
+                        rxn_to_add.annotation = {'atom_mappings': atom_mappings,
+                                                 'ec_number': ec_number,
+                                                 'dblinks': dblinks,
+                                                 'dG': [dG_lb, dG_ub],
+                                                 'rIndex': [ri_lb, ri_ub]}
     else:
-        unmatched_pthwys.extend([pthwy_id])
+        pc.unmatched_pthwys.extend([pthwy_id])
 
-print(str(len(unmatched_pthwys)) + ' pathways do not match')
-print(str(len(mets_w_concentration)) + ' metabolites have concentration info')
-print(str(len(mets_wo_thermo_info)) + ' metabolites don`t have thermo info')
-print(str(len(mets_wo_info)) + ' metabolites have no info')
-print(str(len(rxns_wo_thermo_info)) + ' reactions have missing thermo info')
-print(str(len(transport_rxns)) + ' reactions are transport reactions')
-print(str(len(multi_compartment_rxns)) + ' reactions are multicompartment reactions')
-print(str(len(should_be_balanced_rxns)) + ' reactions are wrongly annotated')
-print(str(len(proton_unbalanced_rxns)) + ' reactions are H+ unbalanced')
+print(str(len(pc.unmatched_pthwys)) + ' pathways do not match')
+print(str(len(pc.mets_w_concentration)) + ' metabolites have concentration info')
+print(str(len(pc.rxns_w_thermo_error)) + ' reactions got an error')
+print(str(len(pc.multi_compartment_rxns)) + ' reactions are multicompartment reactions')
+print(str(len(pc.should_be_balanced_rxns)) + ' reactions are wrongly annotated')
+print(str(len(pc.one_proton_unbalanced_rxns)) + ' reactions are one H+ unbalanced')
+print(str(len(pc.proton_unbalanced_rxns)) + ' reactions are H+ unbalanced')
+print(str(len(pc.one_charge_unbalanced_rxns)) + ' reactions are one charge unbalanced')
+print(str(len(pc.charge_unbalanced_rxns)) + ' reactions are charge unbalanced')
+print(str(len(pc.proton_and_charge_unbalanced_rxns)) + ' reactions are H+ and charge unbalanced')
+print(str(len(pc.eqtr_unbalanced_rxns)) + ' reactions are unbalanced on equilibrator')
+print(str(len(pc.unbalanced_rxns)) + ' reactions are unbalanced')
+print(str(len(pc.corrected_hc_rxns)) + ' reactions had stoichiometry change by nH+')
+cobra.io.save_matlab_model(model, 'model.mat')
+model
+c_model = model.copy()

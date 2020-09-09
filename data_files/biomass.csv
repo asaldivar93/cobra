@@ -1,0 +1,120 @@
+class,name,Kalyuzhnaya 2017,Kalyuzhnaya 2015,Lieven 2018,Machado 2018,metacyc_identifier
+Amino Acids,Alanine ,0.366,0.446,0.576,0.51369175,L-ALPHA-ALANINE
+Amino Acids,Arginine,0.149,0.202,0.254,0.295794,ARG
+Amino Acids,Asparagine ,0.119,0.119,0.468,0.24106625,ASN
+Amino Acids,Aspartate ,0.409,0.348,0.119,0.24106625,L-ASPARTATE
+Amino Acids,Cysteine,0.024,0.03,0.038,0.09158,CYS
+Amino Acids,Glutamate ,0.487,0.396,0.519,0.26317,GLT
+Amino Acids,Glutamine ,0.15,0.15,0.15,0.26317,GLN
+Amino Acids,Histidine,0.078,0.088,0.104,0.0947385,HIS
+Amino Acids,Glycine,0.339,0.443,0.484,0.6126285,GLY
+Amino Acids,Isoleucine ,0.203,0.256,0.242,0.29052175,ILE
+Amino Acids,Leucine,0.332,0.26,0.415,0.45052325,LEU
+Amino Acids,Lysine ,0.182,0.25,0.277,0.34317075,LYS
+Amino Acids,Methionine,0.093,0.12,0.13,0.1536895,MET 
+Amino Acids,Phenylalanine ,0.171,0.196,0.185,0.18292375,PHE
+Amino Acids,Proline,0.161,0.195,0.248,0.22106625,PRO
+Amino Acids,Serine,0.194,0.23,0.246,0.215794,SER
+Amino Acids,Threonine ,0.229,0.26,0.271,0.25369025,THR
+Amino Acids,Tryptophan,0.072,0.072,0.093,0.05684225,TRP
+Amino Acids,Tyrosine ,0.111,0.14,0.132,0.137897,TYR
+Amino Acids,Valine,0.278,0.341,0.36,0.4231715,VAL
+Ectoine ,Ectoine,0.106,,,,ECTOINE
+FAME ,C14 (myristate),0.01,0.016,0.001,,CPD-7836
+FAME ,C15 (pentadecanoic acid) ,0.002,0.002,,,CPD-8462
+FAME ,C16 (palmitate) ,0.329,0.307,0.016,,PALMITATE
+FAME ,C18 (stearate),0.002,0.001,,,STEARIC_ACID
+Phospholipids,Phosphatidylserine (1%)*,0.002,0.014,0.008,,L-1-PHOSPHATIDYL-SERINE
+Phospholipids,Phosphatidylethanolamine (50%)* ,0.086,0.122,0.081,0.139024,L-1-PHOSPHATIDYL-ETHANOLAMINE
+Phospholipids,Dipalmitoyl phosphatidate (4)* ,0.007,0.007,,,CPD0-1422 CPD-9245
+Phospholipids,Cardiolipin (11)*,0.019,,0.003,,CARDIOLIPIN
+Phospholipids,Phosphatidylglycerol (34)*,0.059,0.031,0.014,,L-1-PHOSPHATIDYL-GLYCEROL
+Sterols,tetrahymanol,0.025,,,,CPD-14517
+Sterols,aminotriol (III) 65% of BHP ,0.008,,,,CPD-14521
+Sterols,3-Me-aminotriol 31% BHP,0.003,,,,
+Sterols,aminotetrol and 3-Me-aminotetrol <3% BHP ,0.003,,,,CPD-14520
+Sterols,squalene,,0.04,0.013,,SQUALENE
+Sterols,lanosterol,,0.04,0.005,,LANOSTEROL
+Sterols,Diplopterol,,,0.013,,CPD-14518
+Intracellular Metabolites,Ribulose-5-phosphate/Ribose-5-phosphate ,0.001,0.001,0.001,,RIBOSE-5P
+Intracellular Metabolites,Fructose-1 6-bisphosphate ,0.001,0.001,0.001,,FRUCTOSE-16-DIPHOSPHATE
+Intracellular Metabolites,Fructose-6-phosphate ,0.003,0.003,0.003,,FRUCTOSE-6P
+Intracellular Metabolites,Glucose-6-phosphate,0.002,0.002,0.002,,GLC-6-P GLC-1-P
+Intracellular Metabolites,Glyceraldehyde-3-phosphate/Dihydroxyacetone ,0.003,0.003,0.003,,GAP
+Intracellular Metabolites,6-Phosphogluconic acid,0.00015,0.00015,0.00015,,CPD-2961
+Intracellular Metabolites,2-dehydro-3-deoxy-phosphogluconate ,3.00E-06,3.00E-06,3.00E-06,,2-KETO-3-DEOXY-6-P-GLUCONATE
+Intracellular Metabolites,Phosphoglycerate,0.006,0.006,0.006,,G3P
+Intracellular Metabolites,Phosphoenolpyruvate ,0.005,0.005,0.005,,PHOSPHO-ENOL-PYRUVATE
+Intracellular Metabolites,Pyruvate,0.015,0.015,0.015,,PYRUVATE
+Intracellular Metabolites,Acetyl-CoA ,0.0001,0.0001,0.0001,,ACETYL-COA
+Intracellular Metabolites,Succinate,0.002,0.002,0.002,,SUC
+Intracellular Metabolites,Malate,0.004,0.004,0.004,,MAL
+Intracellular Metabolites,Fumarate,0.001,0.001,0.001,,FUM
+Intracellular Metabolites,Citrate,0.001,0.001,0.001,,CIT
+Intracellular Metabolites,Glycerate ,0.001,0.001,0.001,,GLYCERATE
+Intracellular Metabolites,polyP (PPi),0.029,0.029,,0.77390225,PPI
+Cofactors ,Thiamin B1,,,0.0001,0.000223,THIAMINE THIAMINE-P THIAMINE-PYROPHOSPHATE
+Cofactors ,Riboflavin B2,,,0.0001,0.000223,RIBOFLAVIN
+Cofactors ,Nicotinic acid,,,0.001,,NIACINE
+Cofactors ,Inositol 30,,,0.0001,,MYO-INOSITOL
+Cofactors ,adenosylcobalamine,6.30E-08,6.30E-08,,,ADENOSYLCOBALAMIN
+Cofactors ,Cytochrome c,0.00036,0.00036,,,
+Cofactors ,Ubiquinol-8 ,0.00022,0.00022,,,CPD-9956
+Cofactors ,Protoheme,0.00022,0.00022,,0.000223,PROTOHEME
+Cofactors ,coenzyme-A ,0.00022,0.00022,,0.000576,CO-A
+Cofactors ,FMN,0.00022,0.00022,,,FMN
+Cofactors ,10-Formyltetrahydrofolate,0.00022,0.00022,,0.000223,10-FORMYL-THF
+Cofactors ,FAD ,0.00022,0.00022,,0.000223,FAD
+Cofactors ,Glutathione,0.00022,0.00022,,,GLUTATHIONE
+Cofactors ,2-Octaprenyl-6-hydroxyphenol,,,,0.000223,2-OCTAPRENYLPHENOL
+Cofactors ,510-Methylenetetrahydrofolate,,,,0.000223,METHYLENE-THF
+Cofactors ,Pyridoxal 5-phosphate,,,,0.000223,PYRIDOXAL_PHOSPHATE
+Cofactors ,S-Adenosyl-L-methionine,0.00022,0.00022,,0.000223,S-ADENOSYLMETHIONINE
+Cofactors ,Siroheme,,,,0.000223,SIROHEME
+Cofactors ,Tetrahydrofolate,,,,0.000223,THF
+Cofactors ,Menaquinol 8,,,,0.0001,REDUCED-MENAQUINONE
+Cofactors ,Undecaprenyl-diphospho-N-acetylmuramoyl-(N-acetylglucosamine)-L-alanyl-D-glutamyl-meso-26-diaminopimeloyl-D-alanyl-D-alanine,,,,0.1,C5
+Cofactors ,Undecaprenyl diphosphate,,,,5.50E-05,CPD-9649
+Cofactors ,Two disacharide linked murein units pentapeptide crosslinked tetrapeptide (A2pm->D-ala) (middle of chain),,,,0.013892,CPD0-2278
+Carbohydrates ,Mannose,0.002,0.002,,,GDP-MANNOSE
+Carbohydrates ,Ramnose ,0.0002,0.0002,,,RHAMNOSE
+Carbohydrates ,Glycogen,0.448,0.117,,,Glycogens
+Carbohydrates ,Sucrose ,0.026,0.01,,,SUCROSE
+Carbohydrates ,Ribose ,0.036,0.036,,,RIBOSE
+Carbohydrates ,Maltose,0.008,0.008,,,MALTOSE
+Carbohydrates ,Arabinose ,0.022,0.022,,,D-arabinopyranose L-arabinopyranose
+Carbohydrates ,Galactose,0.005,0.005,,,D-Galactopyranose L-Galactopyranose
+Cell wall ,Peptidoglycan,0.053,0.053,0.053,0.0559085,CPD-17988 CPD-17987  CPD-18809 CPD-17986 CPD0-2579 CPD-17985
+Cell wall ,LPS (lipid IVA and KDO) ,0.002,0.002,0.002,,
+Cell wall ,Glycerol teichoic acid  n45   unlinked  unsubstituted C151H297N2O238P46,,,,0.002312,
+Cell wall ,Glycerol teichoic acid  n45   unlinked  D ala substituted C286H612N47O328P46,,,,0.0016735,Gro-P-Teichoic-peptidoglycan
+Cell wall ,Glycerol teichoic acid  n45   unlinked  glucose substituted C421H749N2O464P46,,,,0.0014095,Minor-Teichoic-Bacillus-peptidoglycan
+Cell wall ,Lipoteichoic acid  n24   linked  D alanine substituted C19036H39872N2400O18300P2400,,,,5.00E-05,Type-I-LTA
+Cell wall ,Lipoteichoic acid  n24   linked  glucose substituted C26236H47072O25500P2400,,,,5.00E-05,Type-IV-LTA
+Cell wall ,Lipoteichoic acid  n24   linked  N acetyl D glucosamine C31036H54272N2400O25500P2400,,,,5.00E-05,
+Cell wall ,Lipoteichoic acid  n24   linked  unsubstituted C11836H23072O13500P2400,,,,5.00E-05,
+Cell wall ,KDO(2)-lipid IV(A),,,,0.019456,KDO-LIPID-IVA CPD-12903
+RNA,ATP,0.05,0.05,0.024,,ATP
+RNA,UTP ,0.05,0.05,0.026,0.144103,UTP
+RNA,CTP ,0.047,0.047,0.044,0.133506,CTP
+RNA,GTP ,0.047,0.047,0.041,0.215097,GTP
+DNA ,dATP ,0.0021,0.0021,0.009,0.026167,DATP
+DNA ,dTTP ,0.0021,0.0021,0.009,0.026167,TTP
+DNA ,dCTP ,0.002,0.002,0.014,0.02701775,DCTP
+DNA ,dGTP,0.002,0.002,0.016,0.02701775,DGTP
+Ash,Cu,,0.01,0.002,0.00132125,
+Ash,Mg,,0.07,0.123,0.00848,
+Ash,Fe,,0.0059,0.006,0.01444525,
+Ash,Co ,,0.001,,0.0008645,
+Ash,Ca ,,0.01,,0.005088,
+Ash,P ,,,0.2,,
+Ash,S ,,,0.056,0.0042405,
+Ash,Cl,,,0.214,0.005088,
+Ash,K,,,0.176,0.19079475,
+Ash,Na ,,,0.039,,
+Ash,Zn,,,0.001,0.00104525,
+Ash,Mo,,,,0.003158,
+Ash,Mn,,,,0.00130775,
+Biomass,H2O,,,,-50.06664525,
+Biomass,H+,,,,55.415,
+Biomass,PHB,,,,,Poly-Hydroxybutyrate
