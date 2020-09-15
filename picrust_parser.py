@@ -1,5 +1,5 @@
 from __future__ import print_function
-from tqdm import tqdm
+
 from cobra.flux_analysis.helpers import normalize_cutoff
 from cobra.flux_analysis.fastcc import _find_sparse_mode, _flip_coefficients
 import os
@@ -328,7 +328,7 @@ class p_model():
                         found = True
                         break
                     else:
-                        print(db_link + ' not found in compound cache, searching by next id')
+                        # print(db_link + ' not found in compound cache, searching by next id')
                         found = False
             else:
                 found = False
@@ -430,10 +430,10 @@ class p_model():
 
         # Add reversibility constrains
         if all([dG_lb, dG_ub]):
-            if (dG_lb < 0) and (dG_ub < 0):
+            if (dG_lb.value - dG_lb.error) < 0 and (dG_ub.value + dG_ub.error) < 0:
                 lower_bound = 0
                 upper_bound = 100
-            elif (dG_lb > 0) and (dG_ub > 0):
+            elif (dG_lb.value - dG_lb.error) > 0 and (dG_ub.value + dG_ub.error) > 0:
                 lower_bound = -100
                 upper_bound = 0
             else:
@@ -556,11 +556,11 @@ class p_model():
 
         self.biomass_in_model.index = range(self.biomass_in_model.shape[0])
 
-    def run_blocked_demand(self, model, demands_to_test, consistency_check = False):
+    def run_blocked_demand(self, model, demands_to_test):
         for i in tqdm(range(int(len(demands_to_test)))):
+            comp = demands_to_test[i]
             with model as model:
-                for comp in demands_to_test[i]:
-                    comp_to_test = model.add_boundary(model.metabolites.get_by_id(comp), type = 'demand')
+                comp_to_test = model.add_boundary(model.metabolites.get_by_id(comp), type = 'demand')
                 model.objective = comp_to_test
                 self.solution = model.optimize()
                 if self.solution.objective_value < model.tolerance:
@@ -572,11 +572,7 @@ class p_model():
                 else:
                     self.available_demands.append([comp, self.solution.objective_value, self.solution.fluxes['|RXN-12219|']])
 
-                if consistency_check:
-                    print('running fastcc')
-                    self.consistent_rxns, self.not_consistent_rxns = self.fastcc(model)
-
-    def test_blocked_components(self, model, media, demands = [], sinks = [], consistency_check = False):
+    def test_blocked_components(self, model, media, demands = [], sinks = []):
         self.blocked_demands = []
         self.available_demands = []
         self.blocked_rxns = []
@@ -593,15 +589,11 @@ class p_model():
 
             if demands:
                 demands_to_test = demands
-                self.run_blocked_demand(model, demands_to_test, consistency_check)
+                self.run_blocked_demand(model, demands_to_test)
             else:
                 demands_to_test = self.biomass_in_model.loc[:, 'met_id'].to_list()
-                self.run_blocked_demand(model, demands_to_test, consistency_check)
-
-        if consistency_check:
-            return self.blocked_demands, self.available_demands, self.consistent_rxns, self.not_consistent_rxns
-        else:
-            return self.blocked_demands, self.available_demands
+                self.run_blocked_demand(model, demands_to_test)
+            return self.blocked_demands, self.available_demands, self.blocked_rxns
 
     def fastcc(self, model, flux_threshold = 1.0, zero_cutoff = None):
         zero_cutoff = normalize_cutoff(model, zero_cutoff)

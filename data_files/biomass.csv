@@ -84,7 +84,7 @@ Carbohydrates ,Ribose ,0.036,0.036,,,RIBOSE
 Carbohydrates ,Maltose,0.008,0.008,,,MALTOSE
 Carbohydrates ,Arabinose ,0.022,0.022,,,D-arabinopyranose L-arabinopyranose
 Carbohydrates ,Galactose,0.005,0.005,,,D-Galactopyranose L-Galactopyranose
-Cell wall ,Peptidoglycan,0.053,0.053,0.053,0.0559085,CPD-17988 CPD-17987  CPD-18809 CPD-17986 CPD0-2579 CPD-17985
+Cell wall ,Peptidoglycan,0.053,0.053,0.053,0.0559085,CPD-17988 CPD-17987  CPD-18809 CPD-17986 CPD0-2579 CPD-17985 C3 CPD-17989
 Cell wall ,LPS (lipid IVA and KDO) ,0.002,0.002,0.002,,
 Cell wall ,Glycerol teichoic acid  n45   unlinked  unsubstituted C151H297N2O238P46,,,,0.002312,
 Cell wall ,Glycerol teichoic acid  n45   unlinked  D ala substituted C286H612N47O328P46,,,,0.0016735,Gro-P-Teichoic-peptidoglycan
@@ -93,7 +93,7 @@ Cell wall ,Lipoteichoic acid  n24   linked  D alanine substituted C19036H39872N2
 Cell wall ,Lipoteichoic acid  n24   linked  glucose substituted C26236H47072O25500P2400,,,,5.00E-05,Type-IV-LTA
 Cell wall ,Lipoteichoic acid  n24   linked  N acetyl D glucosamine C31036H54272N2400O25500P2400,,,,5.00E-05,
 Cell wall ,Lipoteichoic acid  n24   linked  unsubstituted C11836H23072O13500P2400,,,,5.00E-05,
-Cell wall ,KDO(2)-lipid IV(A),,,,0.019456,KDO-LIPID-IVA CPD-12903
+Cell wall ,KDO(2)-lipid IV(A),,,,0.019456,KDO2-LIPID-IVA CPD-12903 L-ARA4N-MODIFIED-KDO2-LIPID-A KDO2-LAUROYL-LIPID-IVA
 RNA,ATP,0.05,0.05,0.024,,ATP
 RNA,UTP ,0.05,0.05,0.026,0.144103,UTP
 RNA,CTP ,0.047,0.047,0.044,0.133506,CTP

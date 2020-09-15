@@ -10,7 +10,6 @@ balanced_rxns = pd.read_csv('data_files/balanced_rxns.csv', header=None, dtype='
 balanced_rxns = balanced_rxns.iloc[:, 0].to_list()
 ignore_massbalance = pd.read_csv('data_files/ignore_massbalance.csv', header=None, dtype='str')
 ignore_massbalance = ignore_massbalance.iloc[:, 0].to_list()
-
 # %% codecell
 model = cobra.Model()
 pc = pparser.p_model()
@@ -22,6 +21,23 @@ for ex_rxn in exchange_rxns.keys():
         direction = exchange_rxns[ex_rxn]['direction']
         pc.add_rxn_from_stoichiometry(model, subsystem, ex_rxn, stoichiometry, reversible, direction)
 
+for rxn_id in curated_rxns.keys():
+    if rxn_id not in model.reactions:
+        subsystem = curated_rxns[rxn_id]['pathway']
+        stoichiometry = curated_rxns[rxn_id]['stoichiometry']
+        reversible = curated_rxns[rxn_id]['reversible']
+        direction = curated_rxns[rxn_id]['direction']
+        pc.add_rxn_from_stoichiometry(model, subsystem, rxn_id, stoichiometry, reversible, direction)
+
+for rxn_id in multi_comp_rxns.keys():
+    if rxn_id not in model.reactions:
+        subsystem = multi_comp_rxns[rxn_id]['pathway']
+        stoichiometry = multi_comp_rxns[rxn_id]['stoichiometry']
+        reversible = multi_comp_rxns[rxn_id]['reversible']
+        direction = multi_comp_rxns[rxn_id]['direction']
+        pc.add_rxn_from_stoichiometry(model, subsystem, rxn_id, stoichiometry, reversible, direction)
+        pc.multi_compartment_rxns.append([subsystem, rxn_id, 'added'])
+
 for i in tqdm(range(int(len(pc.pathways)))):
     pthwy = pc.pathways[i]
     pthwy_id = '|' + pthwy + '|'
@@ -30,13 +46,6 @@ for i in tqdm(range(int(len(pc.pathways)))):
             substrates = pparser.metacyc_db.reaction_reactants_and_products(rxn_id, pwy=pthwy_id)
             if not all(substrates):
                 pass
-            elif rxn_id in curated_rxns.keys():
-                if rxn_id not in model.reactions:
-                    subsystem = curated_rxns[rxn_id]['pathway']
-                    stoichiometry = curated_rxns[rxn_id]['stoichiometry']
-                    reversible = curated_rxns[rxn_id]['reversible']
-                    direction = curated_rxns[rxn_id]['direction']
-                    pc.add_rxn_from_stoichiometry(model, subsystem, rxn_id, stoichiometry, reversible, direction)
             else:
                 # Create a list of compartments of reaction
                 comps_of_rxn = []
@@ -53,15 +62,7 @@ for i in tqdm(range(int(len(pc.pathways)))):
                 # Multicompartment and transport rxns need to be parsed manually
                 # If rxn is multicompartment
                 if len(comps_of_rxn) > 1:
-                    if rxn_id in multi_comp_rxns.keys():
-                        if rxn_id not in model.reactions:
-                            subsystem = multi_comp_rxns[rxn_id]['pathway']
-                            stoichiometry = multi_comp_rxns[rxn_id]['stoichiometry']
-                            reversible = multi_comp_rxns[rxn_id]['reversible']
-                            direction = multi_comp_rxns[rxn_id]['direction']
-                            pc.add_rxn_from_stoichiometry(model, subsystem, rxn_id, stoichiometry, reversible, direction)
-                            pc.multi_compartment_rxns.append([pthwy_id, rxn_id, 'added'])
-                    else:
+                    if rxn_id not in multi_comp_rxns.keys():
                         pc.multi_compartment_rxns.append([pthwy_id, rxn_id])
                 else:
                     # Create a Dictionary of reactants and products
