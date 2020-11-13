@@ -1,14 +1,6 @@
 from cobra.flux_analysis.helpers import normalize_cutoff
 from optlang.symbolics import Zero
 
-model = c_model.copy()
-# %% codecell
-leaks = find_leaks(model)
-leaks
-leak_modes = find_leak_mode(model, leaks)
-
-# %% codecell
-
 
 def find_leaks(model):
     w_model = model.copy()

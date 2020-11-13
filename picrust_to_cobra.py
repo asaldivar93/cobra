@@ -10,6 +10,7 @@ balanced_rxns = pd.read_csv('data_files/balanced_rxns.csv', header=None, dtype='
 balanced_rxns = balanced_rxns.iloc[:, 0].to_list()
 ignore_massbalance = pd.read_csv('data_files/ignore_massbalance.csv', header=None, dtype='str')
 ignore_massbalance = ignore_massbalance.iloc[:, 0].to_list()
+
 # %% codecell
 model = cobra.Model()
 pc = pparser.p_model()
@@ -176,5 +177,7 @@ print(str(len(pc.eqtr_unbalanced_rxns)) + ' reactions are unbalanced on equilibr
 print(str(len(pc.unbalanced_rxns)) + ' reactions are unbalanced')
 print(str(len(pc.corrected_hc_rxns)) + ' reactions had stoichiometry change by nH+')
 cobra.io.save_matlab_model(model, 'model.mat')
+
+
 model
 c_model = model.copy()

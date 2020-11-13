@@ -1,10 +1,11 @@
 from __future__ import print_function
 
+import cobra
 from cobra.flux_analysis.helpers import normalize_cutoff
 from cobra.flux_analysis.fastcc import _find_sparse_mode, _flip_coefficients
 import os
 import pandas as pd
-import cobra
+
 import pythoncyc as pcyc
 import equilibrator_api as eqtr
 os.chdir('/home/alexis/UAM/cobra')
@@ -539,22 +540,133 @@ class p_model():
             pass
 
     def search_biomass_components(self, model, path_to_biomass = 'data_files/biomass.csv'):
-        self.biomass_in_model = pd.DataFrame(columns = ['component', 'met_id'])
-        self.biomass_not_in_model = []
+        self.biomass_in_model = pd.DataFrame(
+            columns = ['class', 'name', 'mmol/g', 'met_id']
+            )
         biomas_db = pd.read_csv(path_to_biomass)
-        components = biomas_db.loc[:, 'metacyc_identifier']
-        components.dropna(inplace = True)
-        for component in components:
-            in_model = False
-            for met in component.split():
-                for metabolite in model.metabolites:
-                    if '|' + met + '|' in metabolite.id:
-                        self.biomass_in_model = self.biomass_in_model.append(pd.DataFrame([[met, metabolite.id]], columns = ['component', 'met_id']))
-                        in_model = True
-                if not in_model:
-                    self.biomass_not_in_model.extend([met])
+        biomas_db
+        biomas_db.set_index(
+            'metacyc_identifier', inplace = True
+            )
 
-        self.biomass_in_model.index = range(self.biomass_in_model.shape[0])
+        for met in biomas_db.index:
+            for metabolite in model.metabolites:
+                if '|' + met + '|' in metabolite.id:
+                    self.biomass_in_model = self.biomass_in_model.append(
+                        pd.DataFrame(
+                            [[biomas_db.loc[met, 'class'],
+                              biomas_db.loc[met, 'name'],
+                              biomas_db.loc[met, 'mmol/g'],
+                              metabolite.id]],
+                            columns = ['class', 'name', 'mmol/g', 'met_id']
+                            )
+                        )
+        self.biomass_in_model.reset_index(
+            inplace = True
+            )
+        self.biomass_in_model.drop(
+            columns=['index'], inplace=True
+            )
+        dup_filter = self.biomass_in_model['name'].duplicated()
+        self.biomass_in_model.drop(
+            self.biomass_in_model[dup_filter].index, inplace = True
+            )
+
+        return self.biomass_in_model
+
+    def add_biomass_rxn(self, model, biomass_in_model, ATP_growth = 0.0063):
+        BM_weight = 0
+        # For Every Macromolecule
+        for tp in biomass_in_model.loc[:, 'class'].unique():
+            # Create Metabolite for Macromolecule (AAs, FAMES, etc.)
+            met_to_add = cobra.Metabolite(
+                tp, name = tp
+            )
+            model.add_metabolites(met_to_add)
+
+            # Filter metabolites belonging to Macromolecule
+            class_filt = biomass_in_model.loc[:, 'class'] == tp
+            components = biomass_in_model.loc[class_filt, 'met_id'].to_list()
+            coeffs = (-biomass_in_model.loc[class_filt, 'mmol/g'] / 1000).to_list()
+            components.extend([tp])
+            coeffs.extend([1.0])
+            # Create Dictionary with Stoichiometry
+            stoichiometry = dict(zip(components, coeffs))
+
+            # Create reaction
+            rxn_to_add = cobra.Reaction(
+                'BM_' + tp
+                )
+            model.add_reaction(
+                rxn_to_add
+            )
+            # Add Stoichiometry
+            rxn_to_add.add_metabolites(
+                stoichiometry
+            )
+            rxn_to_add.lower_bound = 0
+            rxn_to_add.upper_bound = 1000
+
+            # Calculate Macromolecule Formula from elemental balance
+            element_balance = rxn_to_add.check_mass_balance()
+            formula = ''
+            for e in element_balance:
+                if not e == 'charge':
+                    if not e == 'F':
+                        if not e == 'E':
+                            formula += str(e) + str(format(-element_balance[e], '.30f'))
+                elif e == 'charge':
+                    met_to_add.charge = element_balance[e]
+            met_to_add.formula = formula
+
+            # Add macromolecule weight to total biomass weight
+            BM_weight += met_to_add.formula_weight
+
+        # Create biomass metabolite
+        met_to_add = cobra.Metabolite(
+            'biomass', name = "biomass"
+            )
+        model.add_metabolites(
+            met_to_add
+            )
+
+        # Add stoichimetry for every macromolecule normalized to BM_weight so that
+        # biomass molecular weight = 1g/mol
+        biomas_coeff = {
+            com: -1 / BM_weight for com in biomass_in_model.loc[:, 'class'].unique()
+            }
+        biomas_coeff['biomass'] = 1
+        # Create Biomass reaction
+        rxn_to_add = cobra.Reaction(
+            'BIOMASS'
+            )
+        model.add_reaction(
+            rxn_to_add
+            )
+        # Add Stoichiometry
+        rxn_to_add.add_metabolites(
+            biomas_coeff
+            )
+        rxn_to_add.upper_bound = 1000
+
+        # Calculate Biomass formula from element balance
+        element_balance = rxn_to_add.check_mass_balance()
+        formula = ''
+        for e in element_balance:
+            if not e == 'charge':
+                formula += str(e) + str(format(-element_balance[e], '.30f'))
+        met_to_add.formula = formula
+        # Add ATP requirement
+        rxn_to_add.add_metabolites(
+            {'|ATP|_cy': -ATP_growth, '|WATER|_cy': -ATP_growth, '|ADP|_cy': ATP_growth, '|Pi|_cy': ATP_growth}
+            )
+        # Add NAD(P)H and PROTON requirements
+        element_balance = rxn_to_add.check_mass_balance()
+        rxn_to_add.add_metabolites(
+            {'|NADPH|_cy': -0.001, '|PROTON|_cy': -element_balance['charge'], '|NADP|_cy': 0.001, '|NADH|_cy': -0.002, '|NAD|_cy': 0.002}
+            )
+
+        return model
 
     def run_blocked_demand(self, model, demands_to_test):
         for i in tqdm(range(int(len(demands_to_test)))):
