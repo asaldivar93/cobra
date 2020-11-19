@@ -291,7 +291,7 @@ corrected_stoichiometry = {
     '|RXN-19338|': {'stoichiometry': {'|CPD-20906|_cy': -2, '|FADH2|_cy': -1, '|CPD-20907|_cy': 2, '|FAD|_cy': 1, '|PROTON|_cy': 2}},
     '|R343-RXN|': {'stoichiometry': {'|CPD-20908|_cy': -2, '|FADH2|_cy': -1, '|CPD-20909|_cy': 2, '|FAD|_cy': 1, '|PROTON|_cy': 2}},
     '|R344-RXN|': {'stoichiometry': {'|ATP|_cy': -2, '|CPD-20909|_cy': -2, '|CPD-690|_cy': 2, '|Corrinoid-Adenosyltransferases|_cy': 2, '|P3I|_cy': 2}},
-    }
+}
 
 
 multi_comp_rxns = {'|MALATE-DEHYDROGENASE-ACCEPTOR-RXN|': {'stoichiometry': {'|MAL|_cy': -1, '|Ubiquinones|_it': -1, '|Ubiquinols|_it': 1, '|OXALACETIC_ACID|_cy': 1}, 'reversible': True, 'pathway': '|TCA| |PWY-7254| |PWY-5913|', 'direction': None},
@@ -402,20 +402,19 @@ added_pthwys = ['PWY-5523',
                 'NADPHOS-DEPHOS-PWY-1'
                 ]
 
-added_if_met = [['GLUTATHIONESYN-PWY', 'GLUTATHIONE'],
-                ['PWY-6387', 'CPD-17988'],
-                ['PEPTIDOGLYCANSYN-PWY', 'CPD-17988'],
-                ['PWY3O-4106', 'NICOTINAMIDE_RIBOSE'],
-                ['KDO-LIPASYN-PWY', 'L-ARA4N-MODIFIED-KDO2-LIPID-A'],
-                ['PWY-5691', 'S-ALLANTOIN'],
-                ['PWY-6613', '|5-10-METHENYL-THF|'],
-                ['PWY-6612', '|THF|'],
-                ['PWY-6148', '|THMPT|'],
-                ['THRDLCTCAT-PWY', 'METHYL-GLYOXAL'],
-                ['PWY0-1264', 'carboxybiotin-L-lysine-in-BCCP-dimers'],
-                ['PWY-7343', 'CPD-12575'],
-                ['PWY-8131', 'CH33ADO'],
-                ]
+added_if_met = pd.DataFrame([['GLUTATHIONESYN-PWY', 'GLUTATHIONE'],
+                             ['PWY-6387', 'CPD-17988'],
+                             ['PEPTIDOGLYCANSYN-PWY', 'CPD-17988'],
+                             ['PWY3O-4106', 'NICOTINAMIDE_RIBOSE'],
+                             ['KDO-LIPASYN-PWY', 'L-ARA4N-MODIFIED-KDO2-LIPID-A'],
+                             ['PWY-5691', 'S-ALLANTOIN'],
+                             ['PWY-6613', '|5-10-METHENYL-THF|'],
+                             ['PWY-6612', '|THF|'],
+                             ['PWY-6148', '|THMPT|'],
+                             ['THRDLCTCAT-PWY', 'METHYL-GLYOXAL'],
+                             ['PWY0-1264', 'carboxybiotin-L-lysine-in-BCCP-dimers'],
+                             ['PWY-7343', 'CPD-12575'],
+                             ['PWY-8131', 'CH33ADO']], columns = ['pathway', 'metabolite'])
 
 corrected_revesibility = {'|1.2.1.2-RXN|': {'lower_bound': 0, 'upper_bound': 100},
                           '|GARTRANSFORMYL2-RXN|': {'lower_bound': 0, 'upper_bound': 100},

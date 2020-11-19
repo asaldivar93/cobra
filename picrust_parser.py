@@ -547,7 +547,7 @@ class p_model():
         biomas_db
         biomas_db.set_index(
             'metacyc_identifier', inplace = True
-            )
+        )
 
         for met in biomas_db.index:
             for metabolite in model.metabolites:
@@ -559,18 +559,18 @@ class p_model():
                               biomas_db.loc[met, 'mmol/g'],
                               metabolite.id]],
                             columns = ['class', 'name', 'mmol/g', 'met_id']
-                            )
                         )
+                    )
         self.biomass_in_model.reset_index(
             inplace = True
-            )
+        )
         self.biomass_in_model.drop(
             columns=['index'], inplace=True
-            )
+        )
         dup_filter = self.biomass_in_model['name'].duplicated()
         self.biomass_in_model.drop(
             self.biomass_in_model[dup_filter].index, inplace = True
-            )
+        )
 
         return self.biomass_in_model
 
@@ -596,7 +596,7 @@ class p_model():
             # Create reaction
             rxn_to_add = cobra.Reaction(
                 'BM_' + tp
-                )
+            )
             model.add_reaction(
                 rxn_to_add
             )
@@ -625,28 +625,28 @@ class p_model():
         # Create biomass metabolite
         met_to_add = cobra.Metabolite(
             'biomass', name = "biomass"
-            )
+        )
         model.add_metabolites(
             met_to_add
-            )
+        )
 
         # Add stoichimetry for every macromolecule normalized to BM_weight so that
         # biomass molecular weight = 1g/mol
         biomas_coeff = {
             com: -1 / BM_weight for com in biomass_in_model.loc[:, 'class'].unique()
-            }
+        }
         biomas_coeff['biomass'] = 1
         # Create Biomass reaction
         rxn_to_add = cobra.Reaction(
             'BIOMASS'
-            )
+        )
         model.add_reaction(
             rxn_to_add
-            )
+        )
         # Add Stoichiometry
         rxn_to_add.add_metabolites(
             biomas_coeff
-            )
+        )
         rxn_to_add.upper_bound = 1000
 
         # Calculate Biomass formula from element balance
@@ -659,12 +659,12 @@ class p_model():
         # Add ATP requirement
         rxn_to_add.add_metabolites(
             {'|ATP|_cy': -ATP_growth, '|WATER|_cy': -ATP_growth, '|ADP|_cy': ATP_growth, '|Pi|_cy': ATP_growth}
-            )
+        )
         # Add NAD(P)H and PROTON requirements
         element_balance = rxn_to_add.check_mass_balance()
         rxn_to_add.add_metabolites(
             {'|NADPH|_cy': -0.001, '|PROTON|_cy': -element_balance['charge'], '|NADP|_cy': 0.001, '|NADH|_cy': -0.002, '|NAD|_cy': 0.002}
-            )
+        )
 
         return model
 
@@ -716,7 +716,7 @@ class p_model():
         with model:
             rxns_to_keep = _find_sparse_mode(
                 model, rxns_to_check, flux_threshold, zero_cutoff
-                )
+            )
 
         rxns_to_check = list(set(model.reactions).difference(rxns_to_keep))
 
@@ -724,7 +724,7 @@ class p_model():
             with model:
                 new_rxns = _find_sparse_mode(
                     model, rxns_to_check, flux_threshold, zero_cutoff
-                    )
+                )
                 rxns_to_keep.extend(new_rxns)
 
                 # this condition will be valid for all but the last iteration
@@ -737,7 +737,7 @@ class p_model():
                     to_add_rxns = sol.fluxes.index[sol.fluxes.abs() > zero_cutoff].tolist()
                     rxns_to_keep.extend(
                         [model.reactions.get_by_id(rxn) for rxn in to_add_rxns]
-                        )
+                    )
                     # since this is the last iteration, it needs to break or else
                     # it will run forever since rxns_to_check won't be empty
                     break
@@ -746,7 +746,7 @@ class p_model():
         # need the ids since Reaction objects are created fresh with model.copy()
         rxns_to_remove = [
             rxn.id for rxn in set(model.reactions).difference(consistent_rxns)
-            ]
+        ]
 
         return consistent_rxns, rxns_to_remove
 
