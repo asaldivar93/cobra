@@ -4,14 +4,22 @@ from tqdm import tqdm
 import cobra
 from data_files.corrected_datasets import (multi_comp_rxns,
                                            curated_rxns,
+                                           exchange_rxns,
                                            added_if_met,
-                                           added_pthwys)
+                                           added_pthwys,
+                                           sinks,
+                                           artificial_EX,
+                                           true_DM,
+                                           possible_product)
 import picrust_parser as pparser
 balanced_rxns = pd.read_csv('data_files/balanced_rxns.csv', header=None, dtype='str')
 balanced_rxns = balanced_rxns.iloc[:, 0].to_list()
 ignore_massbalance = pd.read_csv('data_files/ignore_massbalance.csv', header=None, dtype='str')
 ignore_massbalance = ignore_massbalance.iloc[:, 0].to_list()
 
+artificial_DM = []
+sinks.extend(artificial_EX)
+artificial_DM.extend(true_DM)
 # %% codecell
 pt = p_tools.picrust_tools()
 pwy_strat = pt.sample_strat_pathway()
@@ -58,6 +66,14 @@ model = cobra.Model()
 pc = pparser.p_model()
 pathways = pwys_in_gens['Methylocystis'].copy()
 pathways.append(added_pthwys)
+
+for ex_rxn in exchange_rxns.keys():
+    if ex_rxn not in model.reactions:
+        subsystem = exchange_rxns[ex_rxn]['pathway']
+        stoichiometry = exchange_rxns[ex_rxn]['stoichiometry']
+        reversible = exchange_rxns[ex_rxn]['reversible']
+        direction = exchange_rxns[ex_rxn]['direction']
+        pc.add_rxn_from_stoichiometry(model, subsystem, ex_rxn, stoichiometry, reversible, direction)
 
 for rxn_id in curated_rxns.keys():
     if rxn_id not in model.reactions:
@@ -212,3 +228,22 @@ for i in tqdm(range(int(len(pathways)))):
     for path in added_if_met.loc[add_pwys, 'pathway']:
         if path not in pathways:
             pathways.append(path)
+
+biomass_in_model = pc.search_biomass_components(model)
+model = pc.add_biomass_rxn(model, biomass_in_model)
+
+for met in sinks:
+    sink = model.metabolites.get_by_id(met)
+    model.add_boundary(
+        sink, type = 'sink'
+    )
+
+for met in artificial_DM:
+    dm = model.metabolites.get_by_id(met)
+    model.add_boundary(
+        dm, type = 'demand'
+    )
+
+for r in ['|ATP|_cy_syn', '|1.10.2.2-RXN|', '|CYTOCHROME-C-OXIDASE-RXN|', '|NADH-DEHYDROG-A-RXN|', 'DM_biomass']:
+    rxn = model.reactions.get_by_id(r)
+    rxn.upper_bound = 1000

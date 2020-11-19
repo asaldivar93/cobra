@@ -823,3 +823,36 @@ possible_product = ['|NITROGEN-MOLECULE|_pe', '|HYDROGEN-MOLECULE|_cy', '|ETOH|_
                     '|BUTYRIC_ACID|_cy', '|CARBON-MONOXIDE|_cy', '|PUTRESCINE|_cy',
                     '|Poly-Hydroxybutyrate|_cy'
                     ]
+
+media = ['|CH4|_ex', '|OXYGEN-MOLECULE|_ex', '|NITRATE|_ex', '|FE+2|_ex', '|Pi|_ex', '|SULFATE|_ex']
+
+sinks = ['|WATER|_pe', '|WATER|_cy', '|ACP|_cy',
+         '|CPD-1302|_cy', '|CPD-1301|_cy', '|Guanine34-in-tRNAs|_cy',
+         '|S-ADENOSYL-4-METHYLTHIO-2-OXOBUTANOATE|_cy', '|Hpr-pi-phospho-L-histidines|_cy',
+         '|Unsulfurated-Sulfur-Acceptors|_cy', '|Corrinoid-Adenosyltransferases|_cy',
+         '|LysW-C-Terminal-L-Glutamate|_cy', '|CPD-17931|_pe',
+         '|CoI-Corrinoid-Fe-S-proteins|_cy', '|Cysteine-Desulfurase-L-cysteine|_cy',
+         '|D-alanine-carrier-protein|_cy', '|DsrE3A-L-cysteine|_cy', '|Ox-Thioredoxin|_cy',
+         '|Sulfur-Carrier-Proteins-ThiI|_cy', '|Thi-S|_cy', '|4Fe-4S+1|_cy',
+         '|CPD-381|_cy'
+         ]
+
+artificial_EX = ['|NA+|_cy', '|MG+2|_cy', '|CO+2|_cy', '|CL-|_cy']
+
+true_DM = ['|NA+|_pe', '|DTDP-RHAMNOSE|_cy', '|ACP|_pe', '|FORMAMIDE|_cy',
+           '|UNDECAPRENYL-DIPHOSPHATE|_pe', '|CPD-10640|_cy', '|UNKNOWN|_cy',
+           '|N-ACETYL-D-GLUCOSAMINE|_cy', '|CPD-15999|_cy',
+           '|ETHANOL-AMINE|_cy', '|ALLYSINE|_cy', '|Alcohols|_cy',
+           '|1-AMINO-PROPAN-2-OL|_cy', '|P3I|_cy', '|Cysteine-Desulfurase-L-cysteine|_cy',
+           '|GLYCOLALDEHYDE|_cy', '|4Fe-4S+2|_cy', '|HYDROGEN-PEROXIDE|_cy',
+           '|Hpr-Histidine|_cy', '|PPI|_cy', '|Pi|_cy', '|NAD|_cy', '|NADP|_cy'
+           ]
+
+possible_product = ['|NITROGEN-MOLECULE|_pe', '|HYDROGEN-MOLECULE|_cy', '|ETOH|_cy',
+                    '|CPD-10755|_cy', '|NITROGEN-MOLECULE|_cy', '|Methylketones|_cy',
+                    '|CPD-347|_cy', '|PROPIONATE|_cy', '|PROPANE-1-2-DIOL|_cy',
+                    '|CPD-10353|_cy', '|BUTANEDIOL|_cy', '|BUTANOL|_cy', '|ACETONE|_cy',
+                    '|FORMATE|_cy', 'biomass', '|CARBON-DIOXIDE|_cy', '|ACET|_cy',
+                    '|BUTYRIC_ACID|_cy', '|CARBON-MONOXIDE|_cy', '|PUTRESCINE|_cy',
+                    '|Poly-Hydroxybutyrate|_cy', '|PROTON|_cy'
+                    ]
