@@ -370,27 +370,51 @@ exchange_rxns = {'CH4': {'stoichiometry': {'|CH4|_ex': -1, '|CH4|_pe': 1}, 'reve
                  '|RXN-18013|': {'stoichiometry': {'|D-Ala-DltC|_cy': -1, '|L-1-PHOSPHATIDYL-GLYCEROL|_cy': -1, '|1-Phosphatidyl-2-O-D-Ala-Glycerol|_pe': 1, '|D-alanine-carrier-protein|_cy': 1}, 'reversible': False, 'pathway': '|TEICHOICACID-PWY|', 'direction': 'L2R'}
                  }
 
+# added_pthwys = ['PWY-5523',
+#                 'GLUTATHIONESYN-PWY',
+#                 'PWY-6387',
+#                 'PEPTIDOGLYCANSYN-PWY',
+#                 'SO4ASSIM-PWY',
+#                 'NADPHOS-DEPHOS-PWY-1',
+#                 'PWY3O-4106',
+#                 'PWY-7962',
+#                 'PWY-5433',
+#                 'PWY-5443',
+#                 'KDO-LIPASYN-PWY',
+#                 'PWY-5691',
+#                 'PWY-6613',
+#                 'PWY-6612',
+#                 'PWY-6148',
+#                 'THRDLCTCAT-PWY',
+#                 'PWY-5041',
+#                 'PWY0-1264',
+#                 'PWY-7343',
+#                 'PWY1-3',
+#                 'PWY-8131'
+#                 ]
+
 added_pthwys = ['PWY-5523',
-                'GLUTATHIONESYN-PWY',
-                'PWY-6387',
-                'PEPTIDOGLYCANSYN-PWY',
-                'SO4ASSIM-PWY',
-                'NADPHOS-DEPHOS-PWY-1',
-                'PWY3O-4106',
                 'PWY-7962',
-                'PWY-5433',
                 'PWY-5443',
-                'KDO-LIPASYN-PWY',
-                'PWY-5691',
-                'PWY-6613',
-                'PWY-6612',
-                'PWY-6148',
-                'THRDLCTCAT-PWY',
                 'PWY-5041',
-                'PWY0-1264',
-                'PWY-7343',
                 'PWY1-3',
-                'PWY-8131'
+                'SO4ASSIM-PWY',
+                'NADPHOS-DEPHOS-PWY-1'
+                ]
+
+added_if_met = [['GLUTATHIONESYN-PWY', 'GLUTATHIONE'],
+                ['PWY-6387', 'CPD-17988'],
+                ['PEPTIDOGLYCANSYN-PWY', 'CPD-17988'],
+                ['PWY3O-4106', 'NICOTINAMIDE_RIBOSE'],
+                ['KDO-LIPASYN-PWY', 'L-ARA4N-MODIFIED-KDO2-LIPID-A'],
+                ['PWY-5691', 'S-ALLANTOIN'],
+                ['PWY-6613', '|5-10-METHENYL-THF|'],
+                ['PWY-6612', '|THF|'],
+                ['PWY-6148', '|THMPT|'],
+                ['THRDLCTCAT-PWY', 'METHYL-GLYOXAL'],
+                ['PWY0-1264', 'carboxybiotin-L-lysine-in-BCCP-dimers'],
+                ['PWY-7343', 'CPD-12575'],
+                ['PWY-8131', 'CH33ADO'],
                 ]
 
 corrected_revesibility = {'|1.2.1.2-RXN|': {'lower_bound': 0, 'upper_bound': 100},

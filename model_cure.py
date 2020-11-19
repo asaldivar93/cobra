@@ -313,3 +313,8 @@ mode.sort()
 for subs, id, r, flux in mode:
     # if id not in corrected_revesibility.keys(): # and id not in checked: #and id in inconsistent:
     print(subs, id, r, flux)
+
+pc.rxns_of_metabolite(model, 'GLUTATHIONE')
+pc.rxns_in_pthwy(model, '|PWY-5406|')
+
+pparser.metacyc_db['PWY-5433']

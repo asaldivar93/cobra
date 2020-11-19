@@ -99,7 +99,8 @@ for i in tqdm(range(int(len(pc.pathways)))):
                     if rxn_id in model.reactions:
                         # add_ subsystem to reaction
                         rxn = model.reactions.get_by_id(rxn_id)
-                        rxn.subsystem = rxn.subsystem + ' ' + pthwy_id
+                        if pthwy_id not in rxn.subsystem:
+                            rxn.subsystem = rxn.subsystem + ' ' + pthwy_id
                     else:
                         # Add reaction
                         rxn_to_add = cobra.Reaction(rxn_id)
