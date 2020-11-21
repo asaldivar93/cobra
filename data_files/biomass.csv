@@ -68,10 +68,10 @@ Cofactors,S-Adenosyl-L-methionine,0.000221,S-ADENOSYLMETHIONINE
 Cofactors,Siroheme,0.000223,SIROHEME
 Cofactors,Tetrahydrofolate,0.000223,THF
 Cofactors,Menaquinol 8,0.0001,Menaquinols
-Cofactors,Undecaprenyl-diphospho-N-acetylmuramoyl-(N-acetylglucosamine)-L-alanyl-D-glutamyl-meso-26-diaminopimeloyl-D-alanyl-D-alanine,0.1,C5
-Cofactors,Undecaprenyl diphosphate,5.50E-05,CPD-9649
-Cofactors,Two disacharide linked murein units pentapeptide crosslinked tetrapeptide (A2pm->D-ala) (middle of chain),0.013892,CPD0-2278
 Cofactors,Protoheme,0.00022,PROTOHEME
+Cell_wall,Undecaprenyl-diphospho-N-acetylmuramoyl-(N-acetylglucosamine)-L-alanyl-D-glutamyl-meso-26-diaminopimeloyl-D-alanyl-D-alanine,0.1,C5
+Cell_wall,Undecaprenyl diphosphate,5.50E-05,CPD-9649
+Cell_wall,Two disacharide linked murein units pentapeptide crosslinked tetrapeptide (A2pm->D-ala) (middle of chain),0.013892,CPD0-2278
 Cell_wall,Peptidoglycan 1,0.0076753036,C3 
 Cell_wall,Peptidoglycan 2,0.0076753036,CPD-17985
 Cell_wall,Peptidoglycan 3,0.0076753036,CPD0-2579

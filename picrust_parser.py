@@ -5,12 +5,24 @@ from cobra.flux_analysis.helpers import normalize_cutoff
 from cobra.flux_analysis.fastcc import _find_sparse_mode, _flip_coefficients
 import os
 import pandas as pd
+from data_files.corrected_datasets import (multi_comp_rxns,
+                                           curated_rxns,
+                                           exchange_rxns,
+                                           added_if_met,
+                                           sinks,
+                                           true_DM,
+                                           possible_product)
 
 import pythoncyc as pcyc
 import equilibrator_api as eqtr
-os.chdir('/home/alexis/UAM/cobra')
+os.chdir('/home/alexis/UAM/cobra/')
 from data_files.corrected_datasets import eqtr_metacyc_map, corrected_stoichiometry, corrected_metabolites, added_pthwys
 eqtr_metacyc_map.set_index('equilibrator', inplace=True)
+pathways = pd.read_csv('data_files/pathways.csv')
+balanced_rxns = pd.read_csv('data_files/balanced_rxns.csv', header=None, dtype='str')
+balanced_rxns = balanced_rxns.iloc[:, 0].to_list()
+ignore_massbalance = pd.read_csv('data_files/ignore_massbalance.csv', header=None, dtype='str')
+ignore_massbalance = ignore_massbalance.iloc[:, 0].to_list()
 
 # Load metacyc
 metacyc_db = pcyc.select_organism('meta')
@@ -467,6 +479,126 @@ class p_model():
         else:
             self.unbalanced_rxns.extend([rxn_to_add.id])
 
+    def add_pathway(self, model, pthwy_id):
+        for rxn_id in metacyc_db[pthwy_id].reaction_list:
+            substrates = metacyc_db.reaction_reactants_and_products(rxn_id, pwy=pthwy_id)
+            if not all(substrates):
+                pass
+            else:
+                # Create a list of compartments of reaction
+                comps_of_rxn = []
+                for compartment in metacyc_db.compartments_of_reaction(rxn_id):
+                    compartment = compartment.replace('|', '').replace('CCO-', '').lower()
+                    if compartment == 'peri-bac' or compartment == 'out' or compartment == 'pm-bac-neg':
+                        compartment = 'periplasm'
+                    elif compartment == 'in':
+                        compartment = 'cytosol'
+                    comps_of_rxn.extend([compartment])
+                    if compartment not in self.compartments:
+                        self.compartments.extend([compartment])
+
+                # Multicompartment and transport rxns need to be parsed manually
+                # If rxn is multicompartment
+                if len(comps_of_rxn) > 1:
+                    if rxn_id not in multi_comp_rxns.keys():
+                        self.multi_compartment_rxns.append([pthwy_id, rxn_id])
+                else:
+                    # Create a Dictionary of reactants and products
+                    substrates = metacyc_db.reaction_reactants_and_products(rxn_id, pwy=pthwy_id)
+                    if not substrates:
+                        substrates = [metacyc_db[rxn_id].left,
+                                      metacyc_db[rxn_id].right]
+                    mets_in_reaction = dict(zip(['reactants', 'products'],
+                                                substrates))
+
+                    # Create a List of metabolites in the reaction
+                    metabolites = mets_in_reaction['reactants'].copy()
+                    metabolites.extend(mets_in_reaction['products'])
+                    # Replace metabolites that fall under the redox_pairs class
+                    metabolites = self.replace_redox_pairs(metabolites)
+
+                    comp = '_' + comps_of_rxn[0][0:2]
+                    # For every metabolite in reaction
+                    for met in metabolites:
+                        # Create id with corresponding compartment
+                        met_id = met + comp
+                        # If the metabolite isn't in the model already
+                        if met_id not in model.metabolites:
+                            # Parse metabolite info
+                            met_to_add = self.parse_metabolite(met, comp)
+                            met_to_add.compartment = comps_of_rxn[0]
+                            # add metabolite
+                            model.add_metabolites(met_to_add)
+                    # Update metabolites list with the corresponding compartment
+                    metabolites = [met + comp for met in metabolites]
+
+                    # if reaction already in model
+                    if rxn_id in model.reactions:
+                        # add_ subsystem to reaction
+                        rxn = model.reactions.get_by_id(rxn_id)
+                        if pthwy_id not in rxn.subsystem:
+                            rxn.subsystem = rxn.subsystem + ' ' + pthwy_id
+                    else:
+                        # Add reaction
+                        rxn_to_add = cobra.Reaction(rxn_id)
+                        model.add_reaction(rxn_to_add)
+
+                        # Add Stoichiometry
+                        stoichiometry = self.parse_stoichiometry(model, rxn_id, mets_in_reaction, metabolites)
+                        rxn_to_add.add_metabolites(stoichiometry)
+
+                        # Contra-intuitive check_mass_balance returns false when reaction is mass_balanced
+                        # If rxn is in list of known balanced rxns
+                        if rxn_id in balanced_rxns or rxn_id in ignore_massbalance:
+                            # then mass_balanced = True
+                            mass_balanced = {}
+                        else:
+                            # else check mass balace of rxn
+                            mass_balanced = rxn_to_add.check_mass_balance()
+
+                        # update Stoichiometry
+                        # If reaction is unbalanced by equal H and charge
+                        unbalanced_elements = list(mass_balanced.keys())
+                        if len(unbalanced_elements) == 2 and ('charge' in unbalanced_elements and 'H' in unbalanced_elements):
+                            if mass_balanced['charge'] == mass_balanced['H']:
+                                # and if H+ is one of the metabolites
+                                if '|PROTON|' + comp in stoichiometry.keys():
+                                    # Then Rxn can be balanced by the addition of H+
+                                    rxn_to_add.add_metabolites({'|PROTON|' + comp: -mass_balanced['H']})
+                                    mass_balanced = rxn_to_add.check_mass_balance()
+                                    self.corrected_hc_rxns.extend([rxn_id])
+
+                        # If rxn is mass_balanced
+                        if not mass_balanced:
+                            lower_bound, upper_bound, dG_lb, dG_ub, ri_lb, ri_ub = self.add_thermo_constraints(rxn_to_add)
+                        # if rxn is not mass balanced
+                        else:
+                            self.classify_unbalanced_rxn(rxn_to_add)
+                            # set rxn as irreversible
+                            dG_lb = []
+                            dG_ub = []
+                            ri_lb = []
+                            ri_ub = []
+                            lower_bound = -100
+                            upper_bound = 100
+
+                        rxn_to_add.lower_bound = lower_bound
+                        rxn_to_add.upper_bound = upper_bound
+                        genes_of_reaction = [gene.replace('|', '')
+                                             for gene in metacyc_db.genes_of_reaction(rxn_id)]
+                        if genes_of_reaction:
+                            rxn_to_add.gene_reaction_rule = '( ' + ' or '.join(genes_of_reaction) + ' )'
+
+                        rxn_to_add.subsystem = pthwy_id
+                        atom_mappings = metacyc_db[rxn_id].atom_mappings
+                        ec_number = metacyc_db[rxn_id].ec_number
+                        dblinks = metacyc_db[rxn_id].dblinks
+                        rxn_to_add.annotation = {'atom_mappings': atom_mappings,
+                                                 'ec_number': ec_number,
+                                                 'dblinks': dblinks,
+                                                 'dG': [dG_lb, dG_ub],
+                                                 'rIndex': [ri_lb, ri_ub]}
+
     def add_rxn_from_stoichiometry(self, model, pthwy_id, rxn_id, stoichimetry,
                                    reversible = True, direction = None, get_thermo_constraints = False):
         rxn_to_add = cobra.Reaction(rxn_id)
@@ -479,7 +611,7 @@ class p_model():
                     compartment = 'cytosol'
                 elif comp == '_pe':
                     compartment = 'periplasm'
-                elif comp == '_ex':
+                elif comp == '_ex' or comp == '_ou':
                     compartment = 'extracellular'
                 elif comp == '_it':
                     compartment = 'intramembrane'

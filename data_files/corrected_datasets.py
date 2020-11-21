@@ -208,7 +208,7 @@ corrected_stoichiometry = {
     '|ACETOLACTSYN-RXN|': {'stoichiometry': {'|PROTON|_cy': -1, '|PYRUVATE|_cy': -2, '|2-ACETO-LACTATE|_cy': 1, '|CARBON-DIOXIDE|_cy': 1}, 'balanced': []},
     '|THIAZOLSYN2-RXN|': {'stoichiometry': {'|CPD-12279|_cy': -1, '|DEOXYXYLULOSE-5P|_cy': -1, '|Thiocarboxyadenylated-ThiS-Proteins|_cy': -1, '|CPD-13575|_cy': 1, '|Thi-S|_cy': 1, '|WATER|_cy': 2}, 'balanced': []},
     '|RXN-8850|': {'stoichiometry': {'|DUMP|_cy': -1, '|METHYLENE-THF|_cy': -1, '|NADPH|_cy': -1, '|PROTON|_cy': -1, '|NADP|_cy': 1, '|THF|_cy': 1, '|TMP|_cy': 1}, 'balanced': []},
-    '|RXN-11489|': {'stoichiometry': {'|NITRIC-OXIDE|_pe': -2, '|NITROGEN-MOLECULE|_cy': 1, '|OXYGEN-MOLECULE|_cy': 1}, 'balanced': []},
+    '|RXN-11489|': {'stoichiometry': {'|NITRIC-OXIDE|_pe': -2, '|NITROGEN-MOLECULE|_pe': 1, '|OXYGEN-MOLECULE|_cy': 1}, 'balanced': []},
     '|DALADALALIG-RXN|': {'stoichiometry': {'|ATP|_cy': -1, '|D-ALANINE|_cy': -2, '|ADP|_cy': 1, '|D-ALA-D-ALA|_cy': 1, '|PROTON|_cy': 1, '|Pi|_cy': 1}, 'balanced': []},
     '|RXN-11023|': {'stoichiometry': {'|CPD-9444|_cy': -1, '|DELTA3-ISOPENTENYL-PP|_cy': -7, '|CPD-11984|_cy': 1, '|PPI|_cy': 7}, 'balanced': []},
     '|AICARTRANSFORM-RXN|': {'stoichiometry': {'|AICAR|_cy': -1, '|10-FORMYL-THF|_cy': -1, '|PHOSPHORIBOSYL-FORMAMIDO-CARBOXAMIDE|_cy': 1, '|THF|_cy': 1}, 'balanced': []},
@@ -347,15 +347,29 @@ curated_rxns = {'|RXN-12219|': {'stoichiometry': {'|CH4|_pe': -1, '|Ubiquinols|_
                 '|RXN-16834|': {'stoichiometry': {'|CROTONYL-COA|_cy': -1, '|NADH|_cy': -2, '|Oxidized-ferredoxins|_cy': -2, '|BUTYRYL-COA|_cy': 1, '|NAD|_cy': 2, '|Reduced-ferredoxins|_cy': 2}, 'reversible': False, 'pathway': '|CENTFERM-PWY|', 'direction': 'L2R'},
                 }
 
-exchange_rxns = {'CH4': {'stoichiometry': {'|CH4|_ex': -1, '|CH4|_pe': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
-                 'O2': {'stoichiometry': {'|OXYGEN-MOLECULE|_ex': -1, '|OXYGEN-MOLECULE|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
-                 'NO3': {'stoichiometry': {'|NITRATE|_pe': -1, '|ATP|_cy': -1, '|WATER|_cy': -1, '|NITRATE|_cy': 1, '|ADP|_cy': 1, '|Pi|_cy': 1, '|PROTON|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
-                 'NO3_1': {'stoichiometry': {'|NITRATE|_ex': -1, '|NITRATE|_pe': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
+exchange_rxns = {'CH4': {'stoichiometry': {'|CH4|_ou': -1, '|CH4|_ex': 1}, 'reversible': False, 'pathway': 'In', 'direction': 'L2R'},
+                 'O2': {'stoichiometry': {'|OXYGEN-MOLECULE|_ou': -1, '|OXYGEN-MOLECULE|_ex': 1}, 'reversible': False, 'pathway': 'In', 'direction': 'L2R'},
+                 'NO3': {'stoichiometry': {'|NITRATE|_ou': -1, '|NITRATE|_ex': 1}, 'reversible': False, 'pathway': 'In', 'direction': 'L2R'},
+                 'Pi': {'stoichiometry': {'|Pi|_ou': -1, '|Pi|_ex': 1}, 'reversible': False, 'pathway': 'In', 'direction': 'L2R'},
+                 'FE+2': {'stoichiometry': {'|FE+2|_ou': -1, '|FE+2|_ex': 1}, 'reversible': False, 'pathway': 'In', 'direction': 'L2R'},
+                 'NA+': {'stoichiometry': {'|NA+|_ou': -1, '|NA+|_ex': 1}, 'reversible': False, 'pathway': 'In', 'direction': 'L2R'},
+                 'MG+2': {'stoichiometry': {'|MG+2|_ou': -1, '|MG+2|_ex': 1}, 'reversible': False, 'pathway': 'In', 'direction': 'L2R'},
+                 'CO+2': {'stoichiometry': {'|CO+2|_ou': -1, '|CO+2|_ex': 1}, 'reversible': False, 'pathway': 'In', 'direction': 'L2R'},
+                 'CL-': {'stoichiometry': {'|CL-|_ou': -1, '|CL-|_ex': 1}, 'reversible': False, 'pathway': 'In', 'direction': 'L2R'},
+                 'SO4': {'stoichiometry': {'|SULFATE|_ou': -1, '|SULFATE|_ex': 1}, 'reversible': False, 'pathway': 'In', 'direction': 'L2R'},
+                 'Ex_CH4': {'stoichiometry': {'|CH4|_ex': -1, '|CH4|_pe': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
+                 'EX_O2': {'stoichiometry': {'|OXYGEN-MOLECULE|_ex': -1, '|OXYGEN-MOLECULE|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
+                 'Ex_NO3': {'stoichiometry': {'|NITRATE|_pe': -1, '|ATP|_cy': -1, '|WATER|_cy': -1, '|NITRATE|_cy': 1, '|ADP|_cy': 1, '|Pi|_cy': 1, '|PROTON|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
+                 'Ex_NO3_1': {'stoichiometry': {'|NITRATE|_ex': -1, '|NITRATE|_pe': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
                  'GLY': {'stoichiometry': {'|GLY|_cy': -1, '|GLY|_pe': 1}, 'reversible': True, 'pathway': 'Out', 'direction': None},
+                 'Ex_Pi': {'stoichiometry': {'|PROTON|_pe': -1, '|Pi|_ex': -1, '|PROTON|_cy': 1, '|Pi|_cy': 1}, 'reversible': False, 'pathway': 'In', 'direction': 'L2R'},
+                 'Ex_FE+2': {'stoichiometry': {'|FE+2|_ex': -1, '|PROTON|_pe': -1, '|FE+2|_cy': 1, '|PROTON|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
+                 'Ex_NA+': {'stoichiometry': {'|NA+|_ex': -1, '|PROTON|_pe': -1, '|NA+|_cy': 1, '|PROTON|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
+                 'Ex_MG+2': {'stoichiometry': {'|MG+2|_ex': -1, '|PROTON|_pe': -1, '|MG+2|_cy': 1, '|PROTON|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
+                 'Ex_CO+2': {'stoichiometry': {'|CO+2|_ex': -1, '|PROTON|_pe': -1, '|CO+2|_cy': 1, '|PROTON|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
+                 'Ex_CL-': {'stoichiometry': {'|CL-|_ex': -1, '|PROTON|_pe': -1, '|CL-|_cy': 1, '|PROTON|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
+                 'Ex_SO4': {'stoichiometry': {'|SULFATE|_ex': -1, '|ATP|_cy': -1, '|WATER|_cy': -1, '|SULFATE|_cy': 1, '|ADP|_cy': 1, '|Pi|_cy': 1, '|PROTON|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
                  'DALA': {'stoichiometry': {'|D-ALANINE|_pe': -1, '|D-ALANINE|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
-                 'Pi': {'stoichiometry': {'|PROTON|_pe': -1, '|Pi|_ex': -1, '|PROTON|_cy': 1, '|Pi|_cy': 1}, 'reversible': False, 'pathway': 'In', 'direction': 'L2R'},
-                 'FE+2': {'stoichiometry': {'|FE+2|_ex': -1, '|PROTON|_pe': -1, '|FE+2|_cy': 1, '|PROTON|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
-                 'SO4': {'stoichiometry': {'|SULFATE|_ex': -1, '|ATP|_cy': -1, '|WATER|_cy': -1, '|SULFATE|_cy': 1, '|ADP|_cy': 1, '|Pi|_cy': 1, '|PROTON|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
                  'starch': {'stoichiometry': {'|Cyclodextrins|_ex': -1, '|Cyclodextrins|_cy': 1}, 'reversible': True, 'pathway': 'In', 'direction': None},
                  '|TRANS-RXN0-226|': {'stoichiometry': {'|PROTON|_pe': -1, '|CPD0-1080|_pe': -1, '|PROTON|_cy': 1, '|CPD0-1080|_cy': 1}, 'reversible': True, 'pathway': '|PWY0-1261|', 'direction': None},
                  '|RXN-17391|': {'stoichiometry': {'|CPD-17989|_pe': -1, '|CPD0-1080|_pe': 1}, 'reversible': False, 'pathway': '|PWY0-1261|', 'direction': 'L2R'},
@@ -369,6 +383,8 @@ exchange_rxns = {'CH4': {'stoichiometry': {'|CH4|_ex': -1, '|CH4|_pe': 1}, 'reve
                  '|RXN1G-137|': {'stoichiometry': {'|ATP|_cy': -1, '|CPD1G-1344|_cy': -1, '|WATER|_cy': -1, '|ADP|_cy': 1, '|CPD1G-1344|_pe': 1, '|Pi|_cy': 1, '|PROTON|_cy': 1}, 'reversible': False, 'pathway': '|PWYG-321|', 'direction': 'L2R'},
                  '|RXN-18013|': {'stoichiometry': {'|D-Ala-DltC|_cy': -1, '|L-1-PHOSPHATIDYL-GLYCEROL|_cy': -1, '|1-Phosphatidyl-2-O-D-Ala-Glycerol|_pe': 1, '|D-alanine-carrier-protein|_cy': 1}, 'reversible': False, 'pathway': '|TEICHOICACID-PWY|', 'direction': 'L2R'}
                  }
+
+
 
 # added_pthwys = ['PWY-5523',
 #                 'GLUTATHIONESYN-PWY',
@@ -402,19 +418,19 @@ added_pthwys = ['PWY-5523',
                 'NADPHOS-DEPHOS-PWY-1'
                 ]
 
-added_if_met = pd.DataFrame([['GLUTATHIONESYN-PWY', 'GLUTATHIONE'],
-                             ['PWY-6387', 'CPD-17988'],
-                             ['PEPTIDOGLYCANSYN-PWY', 'CPD-17988'],
-                             ['PWY3O-4106', 'NICOTINAMIDE_RIBOSE'],
-                             ['KDO-LIPASYN-PWY', 'L-ARA4N-MODIFIED-KDO2-LIPID-A'],
-                             ['PWY-5691', 'S-ALLANTOIN'],
-                             ['PWY-6613', '|5-10-METHENYL-THF|'],
-                             ['PWY-6612', '|THF|'],
-                             ['PWY-6148', '|THMPT|'],
-                             ['THRDLCTCAT-PWY', 'METHYL-GLYOXAL'],
-                             ['PWY0-1264', 'carboxybiotin-L-lysine-in-BCCP-dimers'],
-                             ['PWY-7343', 'CPD-12575'],
-                             ['PWY-8131', 'CH33ADO']], columns = ['pathway', 'metabolite'])
+added_if_met = pd.DataFrame([['GLUTATHIONESYN-PWY', '|GLUTATHIONE|_cy'],
+                             ['PWY-6387', '|CPD-17932|_pe'],
+                             ['PEPTIDOGLYCANSYN-PWY', '|CPD-17988|_pe'],
+                             ['PWY3O-4106', '|NICOTINAMIDE_RIBOSE|_cy'],
+                             ['KDO-LIPASYN-PWY', '|L-ARA4N-MODIFIED-KDO2-LIPID-A|_cy'],
+                             ['PWY-5691', '|S-ALLANTOIN|_cy'],
+                             ['PWY-6613', '|5-10-METHENYL-THF|_cy'],
+                             ['PWY-6612', '|THF|_cy'],
+                             ['PWY-6148', '|THMPT|_cy'],
+                             ['THRDLCTCAT-PWY', '|METHYL-GLYOXAL|_cy'],
+                             ['PWY0-1264', '|carboxybiotin-L-lysine-in-BCCP-dimers|_cy'],
+                             ['PWY-7343', '|CPD-12575|_cy'],
+                             ['PWY-8131', '|CH33ADO|_cy']], columns = ['pathway', 'metabolite'])
 
 corrected_revesibility = {'|1.2.1.2-RXN|': {'lower_bound': 0, 'upper_bound': 100},
                           '|GARTRANSFORMYL2-RXN|': {'lower_bound': 0, 'upper_bound': 100},
@@ -824,7 +840,8 @@ possible_product = ['|NITROGEN-MOLECULE|_pe', '|HYDROGEN-MOLECULE|_cy', '|ETOH|_
                     '|Poly-Hydroxybutyrate|_cy'
                     ]
 
-media = ['|CH4|_ex', '|OXYGEN-MOLECULE|_ex', '|NITRATE|_ex', '|FE+2|_ex', '|Pi|_ex', '|SULFATE|_ex']
+media = ['|CH4|_ex', '|OXYGEN-MOLECULE|_ex', '|NITRATE|_ex', '|FE+2|_ex', '|Pi|_ex',
+         '|SULFATE|_ex', '|NA+|_cy', '|MG+2|_cy', '|CO+2|_cy', '|CL-|_cy']
 
 sinks = ['|WATER|_pe', '|WATER|_cy', '|ACP|_cy',
          '|CPD-1302|_cy', '|CPD-1301|_cy', '|Guanine34-in-tRNAs|_cy',
@@ -837,7 +854,6 @@ sinks = ['|WATER|_pe', '|WATER|_cy', '|ACP|_cy',
          '|CPD-381|_cy'
          ]
 
-artificial_EX = ['|NA+|_cy', '|MG+2|_cy', '|CO+2|_cy', '|CL-|_cy']
 
 true_DM = ['|NA+|_pe', '|DTDP-RHAMNOSE|_cy', '|ACP|_pe', '|FORMAMIDE|_cy',
            '|UNDECAPRENYL-DIPHOSPHATE|_pe', '|CPD-10640|_cy', '|UNKNOWN|_cy',
@@ -849,10 +865,10 @@ true_DM = ['|NA+|_pe', '|DTDP-RHAMNOSE|_cy', '|ACP|_pe', '|FORMAMIDE|_cy',
            ]
 
 possible_product = ['|NITROGEN-MOLECULE|_pe', '|HYDROGEN-MOLECULE|_cy', '|ETOH|_cy',
-                    '|CPD-10755|_cy', '|NITROGEN-MOLECULE|_cy', '|Methylketones|_cy',
+                    '|CPD-10755|_cy', '|Methylketones|_cy',
                     '|CPD-347|_cy', '|PROPIONATE|_cy', '|PROPANE-1-2-DIOL|_cy',
                     '|CPD-10353|_cy', '|BUTANEDIOL|_cy', '|BUTANOL|_cy', '|ACETONE|_cy',
-                    '|FORMATE|_cy', 'biomass', '|CARBON-DIOXIDE|_cy', '|ACET|_cy',
+                    '|FORMATE|_cy', '|CARBON-DIOXIDE|_cy', '|ACET|_cy',
                     '|BUTYRIC_ACID|_cy', '|CARBON-MONOXIDE|_cy', '|PUTRESCINE|_cy',
                     '|Poly-Hydroxybutyrate|_cy', '|PROTON|_cy'
                     ]
