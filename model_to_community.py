@@ -33,8 +33,8 @@ for seq in otus.index:
 
 # %% codecell
 pwys_in_gens = {}
-for gen in otus['Genus'].unique():
-    gen_filter = otus.loc[otus['Genus'] == gen].index
+for genus in otus['Genus'].unique():
+    gen_filter = otus.loc[otus['Genus'] == genus].index
     gen_pwy = pwy_strat['CIR_19'].loc[:, gen_filter].dropna(how = 'all').index.to_list()
     not_minimal = ['added']
     while not_minimal:
@@ -49,12 +49,11 @@ for gen in otus['Genus'].unique():
                     gen_pwy.extend(pwys_to_add)
                     not_minimal.append(['added'])
     gen_pwy = list(dict.fromkeys(gen_pwy))
-    pwys_in_gens[gen] = gen_pwy
+    pwys_in_gens[genus] = gen_pwy
 
 # %% codecell
-pwys_in_gens[gen]
-for gen in pwys_in_gens.keys():
-    print(gen, len(pwys_in_gens[gen]))
+for genus in pwys_in_gens.keys():
+    print(genus, len(pwys_in_gens[gen]))
 
 # %% codecell
 os.chdir('/home/alexis/UAM/cobra/')
@@ -62,7 +61,7 @@ model = cobra.Model()
 pc = pparser.p_model()
 pathways = pwys_in_gens['Methylocystis'].copy()
 pathways.extend(added_pthwys)
-
+gen_id = genus[:2] + genus[-2:]
 for i in tqdm(range(int(len(pathways)))):
     pthwy = pathways[i]
     pthwy_id = '|' + pthwy + '|'
@@ -89,7 +88,7 @@ biomass_in_model = pc.search_biomass_components(model)
 model = pc.add_biomass_rxn(model, biomass_in_model)
 
 print(
-    gen,
+    genus,
     model.metabolites.get_by_id('biomass').formula_weight,
     model.metabolites.get_by_id('biomass').formula
 )
@@ -144,6 +143,14 @@ for met in artificial_DM:
         model.add_boundary(
             dm, type = 'demand'
         )
+
+for met in model.metabolites:
+    met.id = met.id + '_' + gen_id
+
+for rxn in model.reactions:
+    rxn.id = rxn.id + '_' + gen_id
+
+model.repair()
 
 for ex_rxn in exchange_rxns.keys():
     if ex_rxn not in model.reactions:
