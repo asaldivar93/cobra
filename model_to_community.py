@@ -3,6 +3,7 @@ import p_tools
 import os
 from tqdm import tqdm
 import cobra
+from copy import deepcopy
 from data_files.corrected_datasets import (multi_comp_rxns,
                                            curated_rxns,
                                            exchange_rxns,
@@ -20,7 +21,6 @@ artificial_DM.extend(true_DM)
 pt = p_tools.picrust_tools()
 pwy_strat = pt.sample_strat_pathway()
 
-# %% codecell
 taxonomy = pd.read_csv('/home/alexis/UAM/cobra/data_files/silva_taxonomy.csv', sep ='\t')
 taxonomy.set_index('sequence_identifier', inplace = True)
 seq_counts = pd.read_csv('/home/alexis/UAM/cobra/data_files/otu-table-corrected.tsv', sep = '\t', index_col = 'OTU_ID')
@@ -31,7 +31,6 @@ for seq in otus.index:
     otus.loc[seq, 'Family'] = taxonomy.loc[seq, 'Family']
     otus.loc[seq, 'Genus'] = taxonomy.loc[seq, 'Genus']
 
-# %% codecell
 pwys_in_gens = {}
 for genus in otus['Genus'].unique():
     gen_filter = otus.loc[otus['Genus'] == genus].index
@@ -51,9 +50,8 @@ for genus in otus['Genus'].unique():
     gen_pwy = list(dict.fromkeys(gen_pwy))
     pwys_in_gens[genus] = gen_pwy
 
-# %% codecell
 for genus in pwys_in_gens.keys():
-    print(genus, len(pwys_in_gens[gen]))
+    print(genus, len(pwys_in_gens[genus]))
 
 # %% codecell
 os.chdir('/home/alexis/UAM/cobra/')
@@ -62,6 +60,7 @@ pc = pparser.p_model()
 pathways = pwys_in_gens['Methylocystis'].copy()
 pathways.extend(added_pthwys)
 gen_id = genus[:2] + genus[-2:]
+model.name = gen_id
 for i in tqdm(range(int(len(pathways)))):
     pthwy = pathways[i]
     pthwy_id = '|' + pthwy + '|'
@@ -82,8 +81,9 @@ for i in tqdm(range(int(len(pwys_to_extend)))):
         pc.add_pathway(model, pthwy_id)
     else:
         pc.unmatched_pthwys.extend([pthwy_id])
-
+c_model = deepcopy(model)
 # %% codecell
+model = deepcopy(c_model)
 biomass_in_model = pc.search_biomass_components(model)
 model = pc.add_biomass_rxn(model, biomass_in_model)
 
@@ -110,20 +110,6 @@ for rxn_id in multi_comp_rxns.keys():
         pc.add_rxn_from_stoichiometry(model, subsystem, rxn_id, stoichiometry, reversible, direction)
         pc.multi_compartment_rxns.append([subsystem, rxn_id, 'added'])
 
-for r in corrected_revesibility.keys():
-    lower_bound = corrected_revesibility[r]['lower_bound']
-    upper_bound = corrected_revesibility[r]['upper_bound']
-    rxn = model.reactions.get_by_id(r)
-    rxn.lower_bound = lower_bound
-    rxn.upper_bound = upper_bound
-
-remove_mets = []
-
-for met in model.metabolites:
-    if not met.reactions:
-        remove_mets.extend([met])
-model.remove_metabolites(remove_mets)
-
 for met in sinks:
     try:
         sink = model.metabolites.get_by_id(met)
@@ -144,14 +130,6 @@ for met in artificial_DM:
             dm, type = 'demand'
         )
 
-for met in model.metabolites:
-    met.id = met.id + '_' + gen_id
-
-for rxn in model.reactions:
-    rxn.id = rxn.id + '_' + gen_id
-
-model.repair()
-
 for ex_rxn in exchange_rxns.keys():
     if ex_rxn not in model.reactions:
         subsystem = exchange_rxns[ex_rxn]['pathway']
@@ -169,41 +147,161 @@ class_filter = biomass_in_model['class'].isin(
 to_exchange = biomass_in_model.loc[class_filter, 'met_id'].to_list()
 to_exchange.extend(possible_product)
 for met in to_exchange:
-    metabolite = model.metabolites.get_by_id(met)
-    met_to_ex = met[:-3] + '_ex'
+    try:
+        metabolite = model.metabolites.get_by_id(met)
+    except:
+        pass
+    else:
+        met_to_ex = met[:-3] + '_ex'
 
-    stoichiometry = {}
-    stoichiometry[met_to_ex] = -1
-    stoichiometry[met] = 1
+        stoichiometry = {}
+        stoichiometry[met_to_ex] = -1
+        stoichiometry[met] = 1
 
-    met_to_add = cobra.Metabolite(
-        met_to_ex,
-        name = met_to_ex[:-3].replace('|', ''),
-        formula = metabolite.formula,
-        charge = metabolite.charge,
-        compartment = 'extracellular'
+        met_to_add = cobra.Metabolite(
+            met_to_ex,
+            name = met_to_ex[:-3].replace('|', ''),
+            formula = metabolite.formula,
+            charge = metabolite.charge,
+            compartment = 'extracellular'
+            )
+
+        rxn_id = 'EX_' + met_to_ex[:-3].replace('|', '')
+        rxn_to_add = cobra.Reaction(
+            rxn_id,
+            upper_bound = 1000,
+            lower_bound = -1000
+            )
+
+        model.add_metabolites(
+            met_to_add
         )
 
-    rxn_id = 'EX_' + met_to_ex[:-3].replace('|', '')
-    rxn_to_add = cobra.Reaction(
-        rxn_id,
-        upper_bound = 1000,
-        lower_bound = -1000
+        model.add_reaction(
+            rxn_to_add
         )
 
-    model.add_metabolites(
-        met_to_add
+        rxn_to_add.add_metabolites(
+            stoichiometry
+        )
+
+        model.add_boundary(
+            met_to_add,
+            type = 'demand'
+        )
+
+    for r in corrected_revesibility.keys():
+        lower_bound = corrected_revesibility[r]['lower_bound']
+        upper_bound = corrected_revesibility[r]['upper_bound']
+        try:
+            rxn = model.reactions.get_by_id(r)
+        except:
+            pass
+        else:
+            rxn.lower_bound = lower_bound
+            rxn.upper_bound = upper_bound
+
+    remove_mets = []
+
+    for met in model.metabolites:
+        if not met.reactions:
+            remove_mets.extend([met])
+    model.remove_metabolites(remove_mets)
+
+# for met in model.metabolites:
+#     met.id = met.id + '_' + gen_id
+#
+# for rxn in model.reactions:
+#     rxn.id = rxn.id + '_' + gen_id
+#
+# model.repair()
+
+
+# %% codecell
+prob = model.problem
+
+# empty all constraints
+for constraint in model.constraints:
+    model.remove_cons_vars(constraint)
+
+abundance_var = prob.Variable(
+    'abundance_{}'.format(model.name),
+    lb=0,
+    ub=1000
+)
+growth_rate = prob.Variable(
+    'growth_rate',
+    lb=0,
+    ub=1000
+)
+model.add_cons_vars(
+    [abundance_var, growth_rate]
+)
+rxn = model.reactions.get_by_id(
+    'BIOMASS'
+)
+growth_cons = prob.Constraint(
+    1.0 * rxn.forward_variable * abundance_var - abundance_var * growth_rate,
+    name='growth_{}'.format(model.name),
+    lb=0,
+    ub=0
+)
+model.add_cons_vars(
+    growth_cons
+)
+model.solver.update()
+for met in model.metabolites:
+    # Create constraint
+    met_cons = prob.Constraint(
+        Zero,
+        name=met.id,
+        lb=0,
+        ub=0
     )
 
-    model.add_reaction(
-        rxn_to_add
+    model.add_cons_vars(
+        [met_cons]
     )
+    rxn_coeffs = []
+    # Get stoichiometrich coefficients
+    # for all reactions of met
+    for rxn in met.reactions:
+        coeff = rxn.metabolites[met]
+        rxn_coeffs.append(
+            [rxn.forward_variable, coeff * abundance_var]
+        )
+        rxn_coeffs.append(
+            [rxn.reverse_variable, -coeff * abundance_var]
+        )
 
-    rxn_to_add.add_metabolites(
-        stoichiometry
-    )
+    # Add constraint to model
+    rxn_coeffs = dict(rxn_coeffs)
+    model.constraints.get(met.id).set_linear_coefficients(rxn_coeffs)
 
-    model.add_boundary(
-        met_to_add,
-        type = 'demand'
-    )
+
+growth_cons.expression.args
+
+constraint = growth_cons
+
+from optlang.expression_parsing import parse_optimization_expression
+offset, linear_coefficients, quadratic_coefficients = parse_optimization_expression(
+    constraint, quadratic=True
+)
+
+linear_coefficients
+quadratic_coefficients
+
+grb_terms = []
+for var, coef in linear_coefficients.items():
+    var = self.problem.getVarByName(var.name)
+    grb_terms.append(coef * var)
+for key, coef in quadratic_coefficients.items():
+    if len(key) == 1:
+        var = six.next(iter(key))
+        var = self.problem.getVarByName(var.name)
+        grb_terms.append(coef * var * var)
+    else:
+        var1, var2 = key
+        var1 = self.problem.getVarByName(var1.name)
+        var2 = self.problem.getVarByName(var2.name)
+        grb_terms.append(coef * var1 * var2)

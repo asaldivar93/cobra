@@ -314,7 +314,7 @@ for subs, id, r, flux in mode:
     # if id not in corrected_revesibility.keys(): # and id not in checked: #and id in inconsistent:
     print(subs, id, r, flux)
 
-pc.rxns_of_metabolite(model, 'CPD-12575')
+pc.rxns_of_metabolite(model, 'METOH')
 pc.rxns_in_pthwy(model, '|PWY-7343|')
 
 pparser.metacyc_db['PWY-5433']
