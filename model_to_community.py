@@ -208,100 +208,16 @@ for met in to_exchange:
             remove_mets.extend([met])
     model.remove_metabolites(remove_mets)
 
-# for met in model.metabolites:
-#     met.id = met.id + '_' + gen_id
-#
-# for rxn in model.reactions:
-#     rxn.id = rxn.id + '_' + gen_id
-#
-# model.repair()
+for met in model.metabolites:
+    met.id = met.id + '_' + gen_id
+
+for rxn in model.reactions:
+    rxn.id = rxn.id + '_' + gen_id
+
+model.repair()
 
 
 # %% codecell
-prob = model.problem
+ag_model = build_aggregate_model(model)
 
-# empty all constraints
-for constraint in model.constraints:
-    model.remove_cons_vars(constraint)
-
-abundance_var = prob.Variable(
-    'abundance_{}'.format(model.name),
-    lb=0,
-    ub=1000
-)
-growth_rate = prob.Variable(
-    'growth_rate',
-    lb=0,
-    ub=1000
-)
-model.add_cons_vars(
-    [abundance_var, growth_rate]
-)
-rxn = model.reactions.get_by_id(
-    'BIOMASS'
-)
-growth_cons = prob.Constraint(
-    1.0 * rxn.forward_variable * abundance_var - abundance_var * growth_rate,
-    name='growth_{}'.format(model.name),
-    lb=0,
-    ub=0
-)
-model.add_cons_vars(
-    growth_cons
-)
-model.solver.update()
-for met in model.metabolites:
-    # Create constraint
-    met_cons = prob.Constraint(
-        Zero,
-        name=met.id,
-        lb=0,
-        ub=0
-    )
-
-    model.add_cons_vars(
-        [met_cons]
-    )
-    rxn_coeffs = []
-    # Get stoichiometrich coefficients
-    # for all reactions of met
-    for rxn in met.reactions:
-        coeff = rxn.metabolites[met]
-        rxn_coeffs.append(
-            [rxn.forward_variable, coeff * abundance_var]
-        )
-        rxn_coeffs.append(
-            [rxn.reverse_variable, -coeff * abundance_var]
-        )
-
-    # Add constraint to model
-    rxn_coeffs = dict(rxn_coeffs)
-    model.constraints.get(met.id).set_linear_coefficients(rxn_coeffs)
-
-
-growth_cons.expression.args
-
-constraint = growth_cons
-
-from optlang.expression_parsing import parse_optimization_expression
-offset, linear_coefficients, quadratic_coefficients = parse_optimization_expression(
-    constraint, quadratic=True
-)
-
-linear_coefficients
-quadratic_coefficients
-
-grb_terms = []
-for var, coef in linear_coefficients.items():
-    var = self.problem.getVarByName(var.name)
-    grb_terms.append(coef * var)
-for key, coef in quadratic_coefficients.items():
-    if len(key) == 1:
-        var = six.next(iter(key))
-        var = self.problem.getVarByName(var.name)
-        grb_terms.append(coef * var * var)
-    else:
-        var1, var2 = key
-        var1 = self.problem.getVarByName(var1.name)
-        var2 = self.problem.getVarByName(var2.name)
-        grb_terms.append(coef * var1 * var2)
+ag_model.constraints.Amino_Acids_Paas
