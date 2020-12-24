@@ -1,70 +1,206 @@
 import cobra
-from data_files.corrected_datasets import corrected_revesibility
+from tools.cobra_tools import add_boundaries_for_simulation, search_biomass_components
 
 # %%codecell
-# for rxn in model.reactions:
-#    if rxn.id not in multi_comp_rxns.keys() or rxn.id not in curated_rxns.keys() or rxn.id not in exchange_rxns.keys():
-#        rxn.lower_bound = -100
-#        rxn.upper_bound = 100
+cir = cobra.io.read_sbml_model('models/models_gapfilled/Meis.xml')
+cir = cobra.io.read_sbml_model('models/Meis.xml')
 
-for r in corrected_revesibility.keys():
+# %% codecell
+# Reactions with corrected reversibility for Meis
+for reaction in cir.reactions:
+    if '_RXN_2961' in reaction.id:
+        reaction.lower_bound = 0
+        reaction.upper_bound = 0
+    if '_PYRUFLAVREDUCT_RXN' in reaction.id:
+        reaction.lower_bound = -100
+        reaction.upper_bound = 0
+    if '_CITSYN_RXN' in reaction.id:
+        reaction.lower_bound = 0
+        reaction.upper_bound = 100
+    if '_2OXOGLUTARATEDEH_RXN' in reaction.id:
+        reaction.lower_bound = 0
+        reaction.upper_bound = 100
+    if '_BUTYRYL_COA_DEHYDROGENASE_RXN' in reaction.id:
+        reaction.lower_bound = 0
+        reaction.upper_bound = 0
+    if '_PROPIONATE__COA_LIGASE_RXN' in reaction.id:
+        reaction.lower_bound = 0
+        reaction.upper_bound = 0
+    if '_METHYLENETHFDEHYDROG_NADP_RXN_Meis' in reaction.id:
+        reaction.lower_bound = 0
+        reaction.upper_bound = 0
+    if '_2131_RXN_Meis' in reaction.id:
+        reaction.lower_bound = 0
+        reaction.upper_bound = 0
+    if '_RXN0_268_Meis' in reaction.id:
+        reaction.lower_bound = 0
+        reaction.upper_bound = 0
+    if '_PEPSYNTH_RXN_Mei' in reaction.id:
+        reaction.lower_bound = 0
+        reaction.upper_bound = 0
 
-    lower_bound = corrected_revesibility[r]['lower_bound']
-    upper_bound = corrected_revesibility[r]['upper_bound']
-    rxn = model.reactions.get_by_id(r)
-    rxn.lower_bound = lower_bound
-    rxn.upper_bound = upper_bound
+# %% codecell
+# Reactions with corrected reversibility for CIR
+for rxn in cir.reactions:
+    if '_RXN_2961' in rxn.id:
+        print(rxn.id, rxn.lower_bound, rxn.upper_bound)
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if 'RXN_2802' in rxn.id:
+        print(rxn.id, rxn.lower_bound, rxn.upper_bound)
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if 'R10_RXN' in rxn.id:
+        print(rxn.id, rxn.lower_bound, rxn.upper_bound)
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if 'ISOCIT_CLEAV_RXN' in rxn.id:
+        print(rxn.id, rxn.lower_bound, rxn.upper_bound)
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if 'RXN_11489' in rxn.id:
+        print(rxn.id, rxn.lower_bound, rxn.upper_bound)
+        rxn.lower_bound = -100
+        rxn.upper_bound = 0
+    if '_GLY3KIN_RXN' in rxn.id:
+        print(rxn.id, rxn.lower_bound, rxn.upper_bound)
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if 'CITSYN_RXN' in rxn.id:
+        print(rxn.id, rxn.lower_bound, rxn.upper_bound)
+        rxn.lower_bound = 0
+        rxn.upper_bound = 100
+    if '_RXN_20917' in rxn.id:
+        print(rxn.id, rxn.lower_bound, rxn.upper_bound)
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_EX_METOH_1' in rxn.id:
+        rxn.lower_bound = -100
+        rxn.upper_bound = 0
+    if '_GLUTAMATE_DEHYDROGENASE_NADP__RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 100
+    if '_2_1_3_1_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_RXN_12168' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_R125_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_GLUTACONYL_COA_DECARBOXYLASE_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_PUTTRANSAM_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_RXN_15125' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_RXNI_3' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_R601_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_RXN_7774' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_RXNI_2' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_GCVMULTI_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_RXN_7566' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_ASPARTASE_RXN' in rxn.id:
+        rxn.lower_bound = -100
+        rxn.upper_bound = 0
+    if '_GLUTAMATE_DEHYDROGENASE_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_KETOGLUTREDUCT_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_RXN_11662' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_2_METHYLCITRATE_SYNTHASE_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
 
-remove_mets = []
-for met in model.metabolites:
-    if not met.reactions:
-        remove_mets.extend([met])
+# %% codecell
 
-model.remove_metabolites(remove_mets)
+media = ['_CH4_ou', '_OXYGEN_MOLECULE_ou', '_NITRATE_ou', '_FE_2_ou',
+         '_Pi_ou', '_SULFATE_ou', '_NA__ou', '_MG_2_ou', '_CO_2_ou',
+         '_CL__ou']
 
-media = ['|CH4|_ou', '|OXYGEN-MOLECULE|_ou', '|NITRATE|_ou', '|FE+2|_ou',
-         '|Pi|_ou', '|SULFATE|_ou', '|NA+|_ou', '|MG+2|_ou', '|CO+2|_ou',
-         '|CL-|_ou']
-met
-with model as model:
-    for substrate in media:
-        met = model.metabolites.get_by_id(substrate)
-        model.add_boundary(
-            met, type = 'exchange'
-            )
+with cir as model:
+    add_boundaries_for_simulation(model, 0.00625, media)
+    model.objective = {rxn: 1 for rxn in model.reactions if 'BIOMASS' in rxn.id}
+    # for metabolite in model.metabolites:
+    #     if '_PUTRESCINE_cy' in metabolite.id:
+    #         obj = model.add_boundary(
+    #             model.metabolites._PUTRESCINE_cy_Meis,
+    #             type = 'demand'
+    #         )
+    sol = model.optimize()
+    print(model.summary(solution = sol))
+    print(model.metabolites.get_by_id('_OXYGEN_MOLECULE_cy_Meis').summary(solution = sol))
 
-    medium = {rxn.id: 1000 for rxn in model.exchanges}
-    medium['EX_|CH4|_ou'] = 100
-    model.medium = medium
+sol.status
 
-    # dm = model.add_boundary(
-    #    model.metabolites.get_by_id('Intracellular_Metabolites'), type = 'demand'
-    # )
+# %% codecell
 
-    atp_dm = model.reactions.get_by_id('DM_|ATP|_cy')
-    atp_dm.lower_bound = 3.5
-    atp_dm.upper_bound = 1000
+bm = search_biomass_components(cir)
+class_filter = bm['class'].isin(
+    ['Intracellular_Metabolites', 'Carbohydrates']
+)
 
-    o2_ex = model.reactions.get_by_id('O2')
-    o2_ex.upper_bound = 1000
-    o2_ex.lower_bound = 0
-    o2_ex = model.reactions.get_by_id('EX_O2')
-    o2_ex.upper_bound = 1000
-    o2_ex.lower_bound = 0
-    dm = model.metabolites.get_by_id('biomass')
-    model.add_boundary(
-        dm, type = 'demand'
+to_exchange = bm.loc[class_filter, 'met_id'].to_list()
+
+for metabolite in to_exchange:
+    met_to_ex = metabolite[:-5].replace('cy', 'ex')
+    print(metabolite, met_to_ex)
+    stoichiometry = {}
+    stoichiometry[met_to_ex] = -1
+    stoichiometry[metabolite] = 1
+
+    met_to_add = cobra.Metabolite(
+        met_to_ex,
+        name = met_to_ex[:-3],
+        compartment = 'extracellular'
         )
 
-    for r in ['|ATP|_cy_syn', '|1.10.2.2-RXN|', '|CYTOCHROME-C-OXIDASE-RXN|', '|NADH-DEHYDROG-A-RXN|', 'DM_biomass']:
-        rxn = model.reactions.get_by_id(r)
-        rxn.upper_bound = 1000
+    rxn_id = '_EX' + met_to_ex[:-3]
+    rxn_to_add = cobra.Reaction(
+        rxn_id,
+        upper_bound = 1000,
+        lower_bound = -1000
+        )
 
-    model.objective = {
-        # model.reactions.get_by_id('DM_Intracellular_Metabolites'): 1.0
-        model.reactions.get_by_id('BIOMASS'): 1.0
-        }
+    cir.add_metabolites(
+        met_to_add
+    )
 
-    sol = cobra.flux_analysis.pfba(model)
-    print(model.summary())
-    print(model.metabolites.get_by_id('|OXYGEN-MOLECULE|_cy').summary())
+    cir.add_reaction(
+        rxn_to_add
+    )
+
+    rxn_to_add.add_metabolites(
+        stoichiometry
+    )
+
+    cir.add_boundary(
+        met_to_add,
+        type = 'demand'
+    )
+
+for rxn in cir.reactions:
+    if 'EX' in rxn.id:
+        print(rxn.id)
+
+cobra.io.write_sbml_model(cir, 'model/Meis.xml')

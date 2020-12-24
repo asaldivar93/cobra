@@ -2,7 +2,6 @@
 # missing sparsefba
 # %% codecell
 from tqdm import tqdm
-import pandas as pd
 import cobra
 from data_files.corrected_datasets import (multi_comp_rxns,
                                            curated_rxns,
@@ -10,7 +9,8 @@ from data_files.corrected_datasets import (multi_comp_rxns,
                                            added_if_met,
                                            sinks,
                                            true_DM,
-                                           possible_product)
+                                           possible_product,
+                                           corrected_revesibility)
 import picrust_parser as pparser
 artificial_DM = []
 artificial_DM.extend(true_DM)
@@ -79,12 +79,6 @@ print(str(len(pc.unbalanced_rxns)) + ' reactions are unbalanced')
 print(str(len(pc.corrected_hc_rxns)) + ' reactions had stoichiometry change by nH+')
 cobra.io.save_matlab_model(model, 'model.mat')
 
-c_model = model.copy()
-model = c_model.copy()
-
-biomass_in_model = pc.search_biomass_components(model)
-model = pc.add_biomass_rxn(model, biomass_in_model)
-
 for met in sinks:
     try:
         sink = model.metabolites.get_by_id(met)
@@ -104,6 +98,15 @@ for met in artificial_DM:
         model.add_boundary(
             dm, type = 'demand'
         )
+
+remove_mets = []
+for met in model.metabolites:
+    if not met.reactions:
+        remove_mets.extend([met])
+model.remove_metabolites(remove_mets)
+
+biomass_in_model = pc.search_biomass_components(model)
+model = pc.add_biomass_rxn(model, biomass_in_model)
 
 class_filter = biomass_in_model['class'].isin(
     ['Amino_Acids', 'Cofactors', 'Intracellular_Metabolites', 'Carbohydrates']
@@ -151,4 +154,28 @@ for met in to_exchange:
         type = 'demand'
     )
 
-c_model = model.copy()
+for r in corrected_revesibility.keys():
+
+    lower_bound = corrected_revesibility[r]['lower_bound']
+    upper_bound = corrected_revesibility[r]['upper_bound']
+    rxn = model.reactions.get_by_id(r)
+    rxn.lower_bound = lower_bound
+    rxn.upper_bound = upper_bound
+
+for met in model.metabolites:
+    met.id = '_' + met.id.replace('|', '').replace('.', '_').replace('-', '_').replace('+', '_')
+    model.repair()
+    if not met.name:
+        met.name = met.id
+    if not met.compartment:
+        met.compartment = 'cytosol'
+    met.charge = 0
+    met.annotation = {}
+
+for rxn in model.reactions:
+    rxn.id = '_' + rxn.id.replace('|', '').replace('.', '_').replace('-', '_').replace('+', '_')
+    model.repair()
+    rxn.annotation = {}
+
+
+cobra.io.write_sbml_model(model, 'models/cir.xml')

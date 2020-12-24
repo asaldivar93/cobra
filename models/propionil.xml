@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" sboTerm="SBO:0000624" level="3" version="1" fbc:required="false">
+  <model metaid="meta_model" fbc:strict="true">
+    <listOfUnitDefinitions>
+      <unitDefinition id="mmol_per_gDW_per_hr">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="-3" multiplier="1"/>
+          <unit kind="gram" exponent="-1" scale="0" multiplier="1"/>
+          <unit kind="second" exponent="-1" scale="0" multiplier="3600"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment id="cytosol" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="M__ATP_cy_Meis" name="ATP" compartment="cytosol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C10H12N5O13P3"/>
+      <species id="M__PROPIONYL_COA_cy_Meis" name="Propanoyl-CoA" compartment="cytosol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C24H36N7O17P3S1"/>
+      <species id="M__HCO3_cy_Meis" name="Bicarbonate" compartment="cytosol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C1H1O3"/>
+      <species id="M__PROTON_cy_Meis" name="_PROTON_cy_Meis" compartment="cytosol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="H1"/>
+      <species id="M__D_METHYL_MALONYL_COA_cy_Meis" name="(S)-Methylmalonyl-CoA" compartment="cytosol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C25H35N7O19P3S1"/>
+      <species id="M__Pi_cy_Meis" name="Phosphate" compartment="cytosol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="H1O4P1"/>
+      <species id="M__ADP_cy_Meis" name="ADP" compartment="cytosol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C10H12N5O10P2"/>
+      <species id="M__METHYL_MALONYL_COA_cy_Meis" name="(R)-Methylmalonyl-CoA" compartment="cytosol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C25H35N7O19P3S1"/>
+      <species id="M__SUC_COA_cy_Meis" name="Succinyl-CoA" compartment="cytosol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C25H35N7O19P3S1"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter sboTerm="SBO:0000626" id="cobra_default_lb" value="-100" constant="true"/>
+      <parameter sboTerm="SBO:0000626" id="cobra_default_ub" value="100" constant="true"/>
+      <parameter sboTerm="SBO:0000626" id="cobra_0_bound" value="0" constant="true"/>
+      <parameter sboTerm="SBO:0000626" id="minus_inf" value="-INF" constant="true"/>
+      <parameter sboTerm="SBO:0000626" id="plus_inf" value="INF" constant="true"/>
+      <parameter sboTerm="SBO:0000625" id="R__PROPIONYL_COA_CARBOXY_RXN_Meis_lower_bound" value="-100" units="mmol_per_gDW_per_hr" constant="true"/>
+      <parameter sboTerm="SBO:0000625" id="R__PROPIONYL_COA_CARBOXY_RXN_Meis_upper_bound" value="100" units="mmol_per_gDW_per_hr" constant="true"/>
+      <parameter sboTerm="SBO:0000625" id="R__METHYLMALONYL_COA_MUT_RXN_Meis_lower_bound" value="-100" units="mmol_per_gDW_per_hr" constant="true"/>
+      <parameter sboTerm="SBO:0000625" id="R__METHYLMALONYL_COA_MUT_RXN_Meis_upper_bound" value="100" units="mmol_per_gDW_per_hr" constant="true"/>
+      <parameter sboTerm="SBO:0000625" id="R__METHYLMALONYL_COA_EPIM_RXN_Meis_lower_bound" value="-100" units="mmol_per_gDW_per_hr" constant="true"/>
+      <parameter sboTerm="SBO:0000625" id="R__METHYLMALONYL_COA_EPIM_RXN_Meis_upper_bound" value="100" units="mmol_per_gDW_per_hr" constant="true"/>
+    </listOfParameters>
+    <listOfReactions>
+      <reaction id="R__PROPIONYL_COA_CARBOXY_RXN_Meis" reversible="true" fast="false" fbc:lowerFluxBound="R__PROPIONYL_COA_CARBOXY_RXN_Meis_lower_bound" fbc:upperFluxBound="R__PROPIONYL_COA_CARBOXY_RXN_Meis_upper_bound">
+        <listOfReactants>
+          <speciesReference species="M__ATP_cy_Meis" stoichiometry="1" constant="true"/>
+          <speciesReference species="M__PROPIONYL_COA_cy_Meis" stoichiometry="1" constant="true"/>
+          <speciesReference species="M__HCO3_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__PROTON_cy_Meis" stoichiometry="1" constant="true"/>
+          <speciesReference species="M__D_METHYL_MALONYL_COA_cy_Meis" stoichiometry="1" constant="true"/>
+          <speciesReference species="M__Pi_cy_Meis" stoichiometry="1" constant="true"/>
+          <speciesReference species="M__ADP_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+        <fbc:geneProductAssociation>
+          <fbc:or>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__6602"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__6601"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__10361"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__10360"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__10369"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__10368"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__10367"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__10474"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__10475"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__10476"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__12553"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__15070"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__15071"/>
+            <fbc:geneProductRef fbc:geneProduct="G_HS03736"/>
+            <fbc:geneProductRef fbc:geneProduct="G_HS10893"/>
+          </fbc:or>
+        </fbc:geneProductAssociation>
+      </reaction>
+      <reaction id="R__METHYLMALONYL_COA_MUT_RXN_Meis" reversible="true" fast="false" fbc:lowerFluxBound="R__METHYLMALONYL_COA_MUT_RXN_Meis_lower_bound" fbc:upperFluxBound="R__METHYLMALONYL_COA_MUT_RXN_Meis_upper_bound">
+        <listOfReactants>
+          <speciesReference species="M__METHYL_MALONYL_COA_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__SUC_COA_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+        <fbc:geneProductAssociation>
+          <fbc:or>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__9958"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__9957"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__10362"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__10487"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__10486"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__15077"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__15078"/>
+            <fbc:geneProductRef fbc:geneProduct="G_HS07322"/>
+            <fbc:geneProductRef fbc:geneProduct="G_EG11444"/>
+          </fbc:or>
+        </fbc:geneProductAssociation>
+      </reaction>
+      <reaction id="R__METHYLMALONYL_COA_EPIM_RXN_Meis" reversible="true" fast="false" fbc:lowerFluxBound="R__METHYLMALONYL_COA_EPIM_RXN_Meis_lower_bound" fbc:upperFluxBound="R__METHYLMALONYL_COA_EPIM_RXN_Meis_upper_bound">
+        <listOfReactants>
+          <speciesReference species="M__D_METHYL_MALONYL_COA_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__METHYL_MALONYL_COA_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+        <fbc:geneProductAssociation>
+          <fbc:or>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__9956"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__10485"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__15072"/>
+            <fbc:geneProductRef fbc:geneProduct="G_HS13124"/>
+            <fbc:geneProductRef fbc:geneProduct="G_G__45__43891"/>
+          </fbc:or>
+        </fbc:geneProductAssociation>
+      </reaction>
+    </listOfReactions>
+    <fbc:listOfObjectives fbc:activeObjective="obj">
+      <fbc:objective fbc:id="obj" fbc:type="maximize"/>
+    </fbc:listOfObjectives>
+    <fbc:listOfGeneProducts>
+      <fbc:geneProduct fbc:id="G_G__45__10361" fbc:name="G_G__45__10361" fbc:label="G_G__45__10361"/>
+      <fbc:geneProduct fbc:id="G_G__45__15071" fbc:name="G_G__45__15071" fbc:label="G_G__45__15071"/>
+      <fbc:geneProduct fbc:id="G_G__45__6602" fbc:name="G_G__45__6602" fbc:label="G_G__45__6602"/>
+      <fbc:geneProduct fbc:id="G_G__45__15070" fbc:name="G_G__45__15070" fbc:label="G_G__45__15070"/>
+      <fbc:geneProduct fbc:id="G_G__45__6601" fbc:name="G_G__45__6601" fbc:label="G_G__45__6601"/>
+      <fbc:geneProduct fbc:id="G_G__45__12553" fbc:name="G_G__45__12553" fbc:label="G_G__45__12553"/>
+      <fbc:geneProduct fbc:id="G_G__45__10476" fbc:name="G_G__45__10476" fbc:label="G_G__45__10476"/>
+      <fbc:geneProduct fbc:id="G_G__45__10475" fbc:name="G_G__45__10475" fbc:label="G_G__45__10475"/>
+      <fbc:geneProduct fbc:id="G_HS10893" fbc:name="G_HS10893" fbc:label="G_HS10893"/>
+      <fbc:geneProduct fbc:id="G_G__45__10360" fbc:name="G_G__45__10360" fbc:label="G_G__45__10360"/>
+      <fbc:geneProduct fbc:id="G_G__45__10474" fbc:name="G_G__45__10474" fbc:label="G_G__45__10474"/>
+      <fbc:geneProduct fbc:id="G_G__45__10368" fbc:name="G_G__45__10368" fbc:label="G_G__45__10368"/>
+      <fbc:geneProduct fbc:id="G_G__45__10367" fbc:name="G_G__45__10367" fbc:label="G_G__45__10367"/>
+      <fbc:geneProduct fbc:id="G_HS03736" fbc:name="G_HS03736" fbc:label="G_HS03736"/>
+      <fbc:geneProduct fbc:id="G_G__45__10369" fbc:name="G_G__45__10369" fbc:label="G_G__45__10369"/>
+      <fbc:geneProduct fbc:id="G_G__45__15077" fbc:name="G_G__45__15077" fbc:label="G_G__45__15077"/>
+      <fbc:geneProduct fbc:id="G_G__45__9958" fbc:name="G_G__45__9958" fbc:label="G_G__45__9958"/>
+      <fbc:geneProduct fbc:id="G_G__45__10362" fbc:name="G_G__45__10362" fbc:label="G_G__45__10362"/>
+      <fbc:geneProduct fbc:id="G_G__45__10486" fbc:name="G_G__45__10486" fbc:label="G_G__45__10486"/>
+      <fbc:geneProduct fbc:id="G_HS07322" fbc:name="G_HS07322" fbc:label="G_HS07322"/>
+      <fbc:geneProduct fbc:id="G_G__45__10487" fbc:name="G_G__45__10487" fbc:label="G_G__45__10487"/>
+      <fbc:geneProduct fbc:id="G_G__45__9957" fbc:name="G_G__45__9957" fbc:label="G_G__45__9957"/>
+      <fbc:geneProduct fbc:id="G_G__45__15078" fbc:name="G_G__45__15078" fbc:label="G_G__45__15078"/>
+      <fbc:geneProduct fbc:id="G_EG11444" fbc:name="G_EG11444" fbc:label="G_EG11444"/>
+      <fbc:geneProduct fbc:id="G_G__45__9956" fbc:name="G_G__45__9956" fbc:label="G_G__45__9956"/>
+      <fbc:geneProduct fbc:id="G_HS13124" fbc:name="G_HS13124" fbc:label="G_HS13124"/>
+      <fbc:geneProduct fbc:id="G_G__45__10485" fbc:name="G_G__45__10485" fbc:label="G_G__45__10485"/>
+      <fbc:geneProduct fbc:id="G_G__45__43891" fbc:name="G_G__45__43891" fbc:label="G_G__45__43891"/>
+      <fbc:geneProduct fbc:id="G_G__45__15072" fbc:name="G_G__45__15072" fbc:label="G_G__45__15072"/>
+    </fbc:listOfGeneProducts>
+  </model>
+</sbml>
