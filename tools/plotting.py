@@ -41,7 +41,7 @@ def plot_heatmap(
     )
 
     col_linkage = linkage(
-        pdist(dataframe.T.to_numpy()), method = "weighted", optimal_ordering = True
+        pdist(dataframe.T.to_numpy()), method = "ward", optimal_ordering = True
     )
 
     fig_heatmap = sns.clustermap(

@@ -5,6 +5,9 @@ import warnings
 import plotly.express as px
 import seaborn as sns
 import matplotlib.pyplot as plot
+import arviz
+warnings.filterwarnings("ignore")
+os.chdir('/home/alexis/UAM/cobra/')
 
 from numpy import sign
 from numpy import log10
@@ -12,9 +15,7 @@ from cobra.flux_analysis import micom, plot_micom_tradeoff
 from tools.cobra_tools import add_boundaries_for_simulation
 from tools.p_tools import build_genus_database
 from tools.plotting import plot_heatmap
-
-warnings.filterwarnings("ignore")
-os.chdir('/home/alexis/UAM/cobra/')
+from stan.run_stan import run_sampling
 
 # %% codecell
 taxonomy = pd.read_csv('data_files/silva_taxonomy.csv', sep ='\t')
@@ -30,8 +31,8 @@ taxa_database
 
 # %% codecell
 community_model = cobra.Model()
-community_model.solver = 'cplex'
-sample = taxa_database.loc[:, 'sample'] == 'CIR_19'
+community_model.solver = 'gurobi'
+sample = taxa_database.loc[:, 'sample'] == 'My_20'
 sample_db = taxa_database[sample].set_index('id')
 for k in taxa_database.loc[sample].index:
     new_model = cobra.io.read_sbml_model(taxa_database.loc[k, 'model_path'])
@@ -39,7 +40,8 @@ for k in taxa_database.loc[sample].index:
 
 to_close = ['Ubiquinols', 'CO_A', 'FMN', '10_FORMYL_THF', 'FAD', 'GLUTATHIONE',
             '2_OCTAPRENYLPHENOL', 'METHYLENE_THF', 'PYRIDOXAL_PHOSPHATE',
-            'S_ADENOSYLMETHIONINE', 'THF', 'Menaquinols', 'PROTOHEME']
+            'S_ADENOSYLMETHIONINE', 'THF', 'Menaquinols', 'PROTOHEME', 'Glycogens',
+            'Poly_Hydroxybutyrate']
 for ex in to_close:
     for rxn in community_model.reactions:
         if 'EX' in rxn.id and ex in rxn.id:
@@ -57,6 +59,33 @@ rxn = community_model.reactions._ALCOHOL_DEHYDROG_RXN_Meis
 rxn.lower_bound = 0
 rxn.upper_bound = 100
 
+rxn = community_model.reactions._RR_BUTANEDIOL_DEHYDROGENASE_RXN_Meis
+rxn.lower_bound = 0
+rxn.upper_bound = 100
+
+rxn = community_model.reactions._ACETATEKIN_RXN_Meis
+rxn.lower_bound = 0
+rxn.upper_bound = 100
+
+rxn = community_model.reactions._EX_FORMATE_Meis
+rxn.lower_bound = -100
+rxn.upper_bound = 0
+
+rxn = community_model.reactions._EX_Poly_Hydroxybutyrate_Meis
+rxn.lower_bound = -100
+rxn.upper_bound = 0
+
+rxn = community_model.reactions._EX_PUTRESCINE_Meis
+rxn.lower_bound = -100
+rxn.upper_bound = 0
+
+rxn = community_model.reactions._EX_PROPANE_1_2_DIOL_Meis
+rxn.lower_bound = -100
+rxn.upper_bound = 0
+
+rxn = community_model.reactions._EX_GLT_Meis
+rxn.lower_bound = -100
+rxn.upper_bound = 0
 # %% codecell
 media = ['_CH4_ou', '_OXYGEN_MOLECULE_ou', '_NITRATE_ou', '_FE_2_ou',
          '_Pi_ou', '_SULFATE_ou', '_NA__ou', '_MG_2_ou', '_CO_2_ou',
@@ -75,7 +104,7 @@ sample_db = taxa_database[sample].set_index('id')
 with community_model as model:
     add_boundaries_for_simulation(model, media=media, carbon_uptake=0.00625)
     micom_model, linear_solution, quadratic_solution, micom_solution, taxa_growth_rates = micom(
-        model, 0.2, sample_db
+        model, 0.9, sample_db
     )
 print(micom_model.summary(solution = micom_solution))
 print(micom_model.metabolites._METOH_pe_Meis.summary(solution = micom_solution))
@@ -127,7 +156,6 @@ export_fluxes.reset_index(inplace=True)
 
 # %%codecell
 plot_heatmap(exp, cmap = sns.diverging_palette(263, 244, s = 79, l = 65, sep = 20, as_cmap = True))
-
 external_fluxes.drop(index='CH4', inplace=True)
 # %% codecell
 interaction_matrix = pd.DataFrame(index = external_fluxes.columns, columns = external_fluxes.columns, dtype = 'float')
@@ -139,16 +167,15 @@ for k in interaction_matrix.index:
         total_external = external_fluxes.loc[imports].drop(columns = [j, k], axis=1).sum()
         imports_others = -total_external[total_external > 0].sum()
         exports_others = -total_external[total_external < 0].sum()
-        if sign(flux_from_j) == sign(total_imports_k):
-            IC_j_in_k = abs(total_imports_k - flux_from_j) / (flux_from_j + exports_others)
+        if k == j:
+            IC_j_in_k = 0
+        elif sign(flux_from_j) == sign(total_imports_k):
+            IC_j_in_k = (total_imports_k - (total_imports_k - flux_from_j)) / (flux_from_j + exports_others)
         else:
-            if abs(flux_from_j) >= total_imports_k:
-                IC_j_in_k = (total_imports_k + flux_from_j) / exports_others
-            else:
-                IC_j_in_k = -1 + (total_imports_k + flux_from_j) / total_imports_k
+            # IC_j_in_k = -(exports_others - (exports_others + flux_from_j)) / (exports_others + imports_others)
+            IC_j_in_k = flux_from_j / (exports_others + imports_others)
         interaction_matrix.loc[k, j] = IC_j_in_k
-
-sns.heatmap(interaction_matrix, cmap = sns.diverging_palette(26, 145, s=75, l=67, sep=1, center='light', as_cmap=True))
+sns.heatmap(interaction_matrix, cmap = sns.diverging_palette(26, 145, s=80, l=67, sep=1, center='light', as_cmap=True))
 
 # %% codecell
 interactions_long = pd.DataFrame(columns=['reciver', 'giver', 'ic'])
@@ -169,8 +196,8 @@ for k in interaction_matrix.index:
 import numpy as np
 interactions_long['log_ic'] = interactions_long['ic'] + 2
 interactions_long['log_ic'] = np.log10(interactions_long['log_ic'])
-px.histogram(interactions_long, x='log_ic', template='none')
-sns.ecdfplot(interactions_long,x='log_ic')
+sns.histplot(interactions_long, x='ic')
+sns.ecdfplot(interactions_long, x='ic')
 
 px.box(
     interactions_long,
@@ -187,3 +214,15 @@ px.box(
     color='reciver',
     template='none'
 )
+
+# %%codecell
+fit = run_sampling(interaction_matrix, chains = 4, iter = 2000, positives = True)
+print(fit)
+arviz.plot_trace(fit, var_names = ['mu', 'phi'])
+arviz.plot_posterior(fit, var_names = ['mu', 'phi'])
+
+
+0.14 / 0.43
+0.38 / 0.23
+
+1.6521739130434783 / 0.32558139534883723
