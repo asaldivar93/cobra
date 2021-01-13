@@ -1255,6 +1255,25 @@
       <species id="M__Hex_2_enoyl_ACPs_cy_Meis" name="Trans-Hex-2-enoyl-[acyl-carrier protein]" compartment="cytosol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C22H0O9N3S1P3"/>
       <species id="M__3_oxo_dodecanoyl_ACPs_cy_Meis" name="3-Oxododecanoyl-[acyl-carrier protein]" compartment="cytosol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C28H45O10N3S1P3"/>
       <species id="M__CPD_9924_cy_Meis" name="2-succinyl-5-enolpyruvoyl-6-hydroxy-3-cyclohexene-1-carboxylate" compartment="cytosol" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C14H13O9"/>
+      <species id="M__PPI_ex" name="_PPI" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="H1O7P2"/>
+      <species id="M__MAL_ex" name="_MAL" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C4H4O5"/>
+      <species id="M__FRUCTOSE_16_DIPHOSPHATE_ex" name="_FRUCTOSE_16_DIPHOSPHATE" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C6H10O12P2"/>
+      <species id="M__PYRUVATE_ex" name="_PYRUVATE" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C3H3O3"/>
+      <species id="M__SUCROSE_ex" name="_SUCROSE" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C12H22O11"/>
+      <species id="M__Glycogens_ex" name="_Glycogens" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C24H42O21"/>
+      <species id="M__CIT_ex" name="_CIT" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C6H5O7"/>
+      <species id="M__G3P_ex" name="_G3P" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C3H4O7P1"/>
+      <species id="M__GLYCERATE_ex" name="_GLYCERATE" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C3H5O4"/>
+      <species id="M__PHOSPHO_ENOL_PYRUVATE_ex" name="_PHOSPHO_ENOL_PYRUVATE" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C3H2O6P1"/>
+      <species id="M__GDP_MANNOSE_ex" name="_GDP_MANNOSE" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C16H23N5O16P2"/>
+      <species id="M__FRUCTOSE_6P_ex" name="_FRUCTOSE_6P" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C6H11O9P1"/>
+      <species id="M__CPD_2961_ex" name="_CPD_2961" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C6H10O10P1"/>
+      <species id="M__2_KETO_3_DEOXY_6_P_GLUCONATE_ex" name="_2_KETO_3_DEOXY_6_P_GLUCONATE" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C6H8O9P1"/>
+      <species id="M__SUC_ex" name="_SUC" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C4H4O4"/>
+      <species id="M__RIBOSE_5P_ex" name="_RIBOSE_5P" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C5H9O8P1"/>
+      <species id="M__FUM_ex" name="_FUM" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C4H2O4"/>
+      <species id="M__GAP_ex" name="_GAP" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C3H5O6P1"/>
+      <species id="M__ACETYL_COA_ex" name="_ACETYL_COA" compartment="extracellular" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C23H34N7O17P3S1"/>
     </listOfSpecies>
     <listOfParameters>
       <parameter sboTerm="SBO:0000626" id="cobra_default_lb" value="-1000" constant="true"/>
@@ -24511,6 +24530,253 @@
             <fbc:geneProductRef fbc:geneProduct="G_EG11284"/>
           </fbc:or>
         </fbc:geneProductAssociation>
+      </reaction>
+      <reaction id="R__EX_PPI_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__PPI_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__PPI_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__PPI_ex" sboTerm="SBO:0000628" id="R_DM__PPI_ex" name="_PPI demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__PPI_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_MAL_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__MAL_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__MAL_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__MAL_ex" sboTerm="SBO:0000628" id="R_DM__MAL_ex" name="_MAL demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__MAL_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_FRUCTOSE_16_DIPHOSPHATE_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__FRUCTOSE_16_DIPHOSPHATE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__FRUCTOSE_16_DIPHOSPHATE_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__FRUCTOSE_16_DIPHOSPHATE_ex" sboTerm="SBO:0000628" id="R_DM__FRUCTOSE_16_DIPHOSPHATE_ex" name="_FRUCTOSE_16_DIPHOSPHATE demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__FRUCTOSE_16_DIPHOSPHATE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_PYRUVATE_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__PYRUVATE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__PYRUVATE_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__PYRUVATE_ex" sboTerm="SBO:0000628" id="R_DM__PYRUVATE_ex" name="_PYRUVATE demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__PYRUVATE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_SUCROSE_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__SUCROSE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__SUCROSE_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__SUCROSE_ex" sboTerm="SBO:0000628" id="R_DM__SUCROSE_ex" name="_SUCROSE demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__SUCROSE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_Glycogens_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__Glycogens_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__Glycogens_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__Glycogens_ex" sboTerm="SBO:0000628" id="R_DM__Glycogens_ex" name="_Glycogens demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__Glycogens_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_CIT_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__CIT_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__CIT_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__CIT_ex" sboTerm="SBO:0000628" id="R_DM__CIT_ex" name="_CIT demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__CIT_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_G3P_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__G3P_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__G3P_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__G3P_ex" sboTerm="SBO:0000628" id="R_DM__G3P_ex" name="_G3P demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__G3P_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_GLYCERATE_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__GLYCERATE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__GLYCERATE_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__GLYCERATE_ex" sboTerm="SBO:0000628" id="R_DM__GLYCERATE_ex" name="_GLYCERATE demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__GLYCERATE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_PHOSPHO_ENOL_PYRUVATE_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__PHOSPHO_ENOL_PYRUVATE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__PHOSPHO_ENOL_PYRUVATE_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__PHOSPHO_ENOL_PYRUVATE_ex" sboTerm="SBO:0000628" id="R_DM__PHOSPHO_ENOL_PYRUVATE_ex" name="_PHOSPHO_ENOL_PYRUVATE demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__PHOSPHO_ENOL_PYRUVATE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_GDP_MANNOSE_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__GDP_MANNOSE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__GDP_MANNOSE_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__GDP_MANNOSE_ex" sboTerm="SBO:0000628" id="R_DM__GDP_MANNOSE_ex" name="_GDP_MANNOSE demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__GDP_MANNOSE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_FRUCTOSE_6P_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__FRUCTOSE_6P_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__FRUCTOSE_6P_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__FRUCTOSE_6P_ex" sboTerm="SBO:0000628" id="R_DM__FRUCTOSE_6P_ex" name="_FRUCTOSE_6P demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__FRUCTOSE_6P_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_CPD_2961_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__CPD_2961_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__CPD_2961_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__CPD_2961_ex" sboTerm="SBO:0000628" id="R_DM__CPD_2961_ex" name="_CPD_2961 demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__CPD_2961_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_2_KETO_3_DEOXY_6_P_GLUCONATE_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__2_KETO_3_DEOXY_6_P_GLUCONATE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__2_KETO_3_DEOXY_6_P_GLUCONATE_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__2_KETO_3_DEOXY_6_P_GLUCONATE_ex" sboTerm="SBO:0000628" id="R_DM__2_KETO_3_DEOXY_6_P_GLUCONATE_ex" name="_2_KETO_3_DEOXY_6_P_GLUCONATE demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__2_KETO_3_DEOXY_6_P_GLUCONATE_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_SUC_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__SUC_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__SUC_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__SUC_ex" sboTerm="SBO:0000628" id="R_DM__SUC_ex" name="_SUC demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__SUC_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_RIBOSE_5P_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__RIBOSE_5P_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__RIBOSE_5P_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__RIBOSE_5P_ex" sboTerm="SBO:0000628" id="R_DM__RIBOSE_5P_ex" name="_RIBOSE_5P demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__RIBOSE_5P_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_FUM_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__FUM_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__FUM_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__FUM_ex" sboTerm="SBO:0000628" id="R_DM__FUM_ex" name="_FUM demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__FUM_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_GAP_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__GAP_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__GAP_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__GAP_ex" sboTerm="SBO:0000628" id="R_DM__GAP_ex" name="_GAP demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__GAP_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+      </reaction>
+      <reaction id="R__EX_ACETYL_COA_Meis" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__ACETYL_COA_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M__ACETYL_COA_cy_Meis" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+      </reaction>
+      <reaction metaid="meta_R_DM__ACETYL_COA_ex" sboTerm="SBO:0000628" id="R_DM__ACETYL_COA_ex" name="_ACETYL_COA demand" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_default_ub">
+        <listOfReactants>
+          <speciesReference species="M__ACETYL_COA_ex" stoichiometry="1" constant="true"/>
+        </listOfReactants>
       </reaction>
     </listOfReactions>
     <fbc:listOfObjectives fbc:activeObjective="obj">

@@ -24,7 +24,7 @@ def plot_heatmap(
     )
 
     row_cluster = fcluster(
-        row_linkage, 8, criterion = 'maxclust'
+        row_linkage, 6, criterion = 'maxclust'
     )
 
     fun_palette = dict(
@@ -50,7 +50,7 @@ def plot_heatmap(
         cbar_kws = {'orientation': 'horizontal'},
         cbar_pos=(0.05, 1.01, 0.4, 0.02), method = "weighted",
         row_colors = row_color, dendrogram_ratio=0.05,
-        colors_ratio=0.02, yticklabels = True
+        colors_ratio=0.02, yticklabels = True, center = 0
     )
 
     return fig_heatmap
