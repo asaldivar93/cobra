@@ -1,195 +1,402 @@
+
 import pandas as pd
 import arviz
 
-from stan.run_stan import run_sampling
+from stan.run_stan import run_zinb
 from cobra.flux_analysis import community
-import plotly.express as px
+from tools.cobra_tools import gibbs_results
+from numpy.random import binomial
 
-import random
-from tqdm import trange
-from numpy import sign
-from tools.cobra_tools import add_boundaries_for_simulation
-from cobra.flux_analysis import micom
+import plotly.express as px
+import plotly.graph_objects as go
 
 # %% codecell
 home_path = '/home/alexis/UAM/cobra/'
 taxonomy_path = 'data_files/silva_taxonomy.csv'
 counts_path = 'data_files/otu-table-corrected.tsv'
-results_path = 'results_all_open/'
+results_path = 'results/'
+
 com = community.community(
-    home_path=home_path, taxonomy_path=taxonomy_path, counts_path=counts_path, results_path=results_path
+    home_path=home_path,
+    taxonomy_path=taxonomy_path,
+    counts_path=counts_path,
+    results_path=results_path,
+    name='start'
     )
 media = ['_CH4_ou', '_OXYGEN_MOLECULE_ou', '_NITRATE_ou', '_FE_2_ou',
          '_Pi_ou', '_SULFATE_ou', '_NA__ou', '_MG_2_ou', '_CO_2_ou',
          '_CL__ou']
-yield_mets = dict(EX__OXYGEN_MOLECULE_ou = 'O2', _DM_CARBON_DIOXIDE_ex = 'CO2')
-# %% codecell
+to_close = ['_EX_ETOH_Meis', '_EX_BUTANEDIOL_Meis', '_EX_ACET_Meis', '_EX_FORMATE_Meis',
+            '_EX_PUTRESCINE_Meis', '_EX_PROPANE_1_2_DIOL_Meis', '_EX_GLT_Meis',
+            '_EX_SUC_Meis', '_EX_FUM_Meis', '_EX_FRUCTOSE_6P_Meis', '_EX_CIT_Meis',
+            '_EX_RIBOSE_5P_Meis', '_EX_MAL_Meis', '_EX_SUCROSE_Meis', '_EX_GLYCERATE_Meis',
+            '_EX_FRUCTOSE_16_DIPHOSPHATE_Meis', '_EX_PYRUVATE_Meis', '_EX_GAP_Meis',
+            '_EX_2_KETO_3_DEOXY_6_P_GLUCONATE_Meis', '_EX_CPD_2961_Meis',
+            '_EX_PHOSPHO_ENOL_PYRUVATE_Meis', '_EX_G3P_Meis', '_EX_L_ALPHA_ALANINE_Meis',
+            '_EX_SER_Meis', '_EX_THR_Meis', '_EX_GLN_Meis', '_EX_L_ASPARTATE_Meis']
+yield_mets = dict(
+    EX__OXYGEN_MOLECULE_ou = dict(
+        name='O2', yields=dict(CIR_19=1.31, My_20=1.46), std=dict(CIR_19=0.1, My_20=0.1)
+        ),
+    _DM_CARBON_DIOXIDE_ex = dict(
+        name='CO2', yields=dict(CIR_19=0.64, My_20=0.69), std=dict(CIR_19=0.1, My_20=0.1)
+        )
+    )
+
 samples = dict(CIR_19 = 0.0063, My_20 = 0.00913)
 com.set_samples(samples)
-com.load_models(samples, close_ex=False)
 
 # %% codecell
-fig_tradeoff = com.plot_micom_tradeoff(media)
+# Loas models for each sample
+com.load_models(samples, to_close=to_close, close_ex=True, micom=True)
+
+# %%codecell
+############ Fit models using adaptive gibbs sampling ###############
+com.fit_model(
+    sample='My_20',
+    media=media,
+    carbon_uptake=0.00625,
+    trade_off=0.9,
+    yield_mets=yield_mets,
+    n_sim=600,
+    warmup=250,
+    dir='fit_16-01-2021_16-05-00'
+)
+
+# %%codecell
+############ Load sampling results for each sample ###############
+fit_dirs = dict(
+    CIR_19 = ['fit_16-01-2021_16-04-42', 'fit_16-01-2021_17-12-41', 'fit_16-01-2021_17-13-07', 'fit_16-01-2021_17-13-56'],
+    My_20 = ['fit_16-01-2021_16-05-00', 'fit_16-01-2021_19-03-01', 'fit_16-01-2021_19-05-33', 'fit_16-01-2021_19-15-13']
+)
+# this functions combines all sampling runs in a single dataframe
+gr = gibbs_results(
+    results_path=results_path,
+    fit_dirs=fit_dirs,
+    fitted_mets=to_close
+)
+# Drop outliers
+gr.interactions = gr.interactions.drop(gr.interactions[gr.interactions['Interaction Coefficient'] > 1].index)
+gr.interactions = gr.interactions.drop(gr.interactions[gr.interactions['Interaction Coefficient'] < -1].index)
+gr.yields = gr.yields.drop(gr.yields[gr.yields['Yield'] > 2].index)
+
+# %%codecell
+############ Plot Violin plot for Yields ###############
+fig = go.Figure()
+sample = 'CIR_19'
+fig.add_trace(
+    go.Violin(
+        x=gr.yields.query("Sample==@sample")['Metabolite'],
+        y=gr.yields.query("Sample==@sample")['Yield'],
+        legendgroup=sample, scalegroup=sample, name=sample,
+        side='negative'
+    )
+)
+sample = 'My_20'
+fig.add_trace(
+    go.Violin(
+        x=gr.yields.query("Sample==@sample")['Metabolite'],
+        y=gr.yields.query("Sample==@sample")['Yield'],
+        legendgroup=sample, scalegroup=sample, name=sample,
+        side='positive'
+    )
+)
+fig.update_traces(width=1, meanline=dict(visible=True))
+fig.update_layout(template='none')
+fig.show()
 
 # %% codecell
+fig_co2 = go.Figure()
+for sample in ['CIR_19', 'My_20']:
+    fig_co2.add_trace(
+        go.Violin(
+            x=gr.yields.query("Sample==@sample").query("Metabolite=='CO2'")['Yield'],
+            showlegend=False,
+            name=sample
+        )
+    )
+fig_co2.update_traces(
+    orientation='h', side='positive', width=2, points=False
+    )
+fig_co2.update_layout(
+    yaxis_showgrid=True,
+    xaxis_showgrid=False,
+    xaxis_zeroline=False,
+    template='none',
+    margin=dict(l=60, r=20, t=20, b=50),
+    width=350,
+    height=250
+    )
+fig_co2.update_xaxes(
+    title=dict(
+        text="CO<sub>2</sub>   (C-mol C-mol <sup>-1</sup>)",
+    )
+)
 
-fig, y_df = com.plot_yields(
+fig_o2 = go.Figure()
+for sample in ['CIR_19', 'My_20']:
+    fig_o2.add_trace(
+        go.Violin(
+            x=gr.yields.query("Sample==@sample").query("Metabolite=='O2'")['Yield'],
+            showlegend=False,
+            name=sample
+        )
+    )
+fig_o2.update_traces(
+    orientation='h', side='positive', width=2, points=False
+    )
+fig_o2.update_yaxes(ticks='', showticklabels=False)
+fig_o2.update_layout(
+    yaxis_showgrid=True,
+    xaxis_showgrid=False,
+    xaxis_zeroline=False,
+    template='none',
+    margin=dict(l=30, r=20, t=20, b=50),
+    width=320,
+    height=250
+    )
+fig_o2.update_xaxes(
+    title=dict(
+        text="O<sub>2</sub>   (mol C-mol <sup>-1</sup>)",
+    )
+)
+
+fig_x = go.Figure()
+for sample in ['CIR_19', 'My_20']:
+    fig_x.add_trace(
+        go.Violin(
+            x=gr.yields.query("Sample==@sample").query("Metabolite=='Biomass'")['Yield'],
+            showlegend=False,
+            name=sample
+        )
+    )
+fig_x.update_traces(
+    orientation='h', side='positive', width=2, points=False
+    )
+fig_x.update_yaxes(ticks='', showticklabels=False)
+fig_x.update_layout(
+    yaxis_showgrid=True,
+    xaxis_showgrid=False,
+    xaxis_zeroline=False,
+    template='none',
+    margin=dict(l=30, r=20, t=20, b=50),
+    width=320,
+    height=250
+    )
+fig_x.update_xaxes(
+    title=dict(
+        text="Biomasa   (C-mol C-mol <sup>-1</sup>)",
+    )
+)
+fig_co2.write_image(results_path + 'plots/fitted/co2_yield.svg')
+fig_o2.write_image(results_path + 'plots/fitted/o2_yield.svg')
+fig_x.write_image(results_path + 'plots/fitted/biomass_yield.svg')
+# %%codecell
+############ Plot Violin plot for Metoh exchange ###############
+fig_met = go.Figure()
+for sample in ['CIR_19', 'My_20']:
+    fig_met.add_trace(
+        go.Violin(
+            x=gr.ex_metoh.query("Sample==@sample")['Exchanged Metanol'],
+            showlegend=False,
+            name=sample
+        )
+    )
+
+fig_met.update_traces(
+    orientation='h',
+    side='positive',
+    width=2,
+    points=False,
+    meanline_visible=True
+    )
+fig_met.update_layout(
+    yaxis_showgrid=True,
+    xaxis_showgrid=False,
+    xaxis_zeroline=False,
+    template='none',
+    margin=dict(l=60, r=20, t=20, b=50),
+    width=450,
+    height=250
+    )
+fig_met.update_xaxes(
+    title=dict(
+        text="Fracción de Metanol Intercambiado",
+    )
+)
+fig_met.write_image(results_path + 'plots/fitted/ex_metoh.svg')
+# %%codecell
+fig_n = px.histogram(
+    gr.ex_metoh,
+    x='N Open',
+    color='Sample',
+    template='none',
+    marginal='rug',
+    labels={'N Open': 'Intercambios Activos'}
+)
+fig_n.show()
+fig_n.write_image(results_path + 'plots/fitted/active_ex.svg')
+# %%codecell
+fig1 = px.box(
+    gr.interactions.query("Reciver=='Meis'"),
+    x='Giver', y='Interaction Coefficient',
+    color='Sample',
+    template='none',
+    labels={'Giver': 'Donador', 'Interaction Coefficient': 'Potencial de Interacción'}
+    )
+fig2 = px.box(
+    gr.interactions.query("Reciver=='Meus'"),
+    x='Giver', y='Interaction Coefficient',
+    color='Sample',
+    template='none',
+    labels={'Giver': 'Donador', 'Interaction Coefficient': 'Potencial de Interacción'}
+    )
+fig3 = px.box(
+    gr.interactions.query("Reciver=='Hyum'"),
+    x='Giver', y='Interaction Coefficient',
+    color='Sample',
+    template='none',
+    labels={'Giver': 'Donador', 'Interaction Coefficient': 'Potencial de Interacción'}
+    )
+fig1.write_image(results_path + 'plots/fitted/ic_meis.svg')
+fig2.write_image(results_path + 'plots/fitted/ic_meus.svg')
+fig2.write_image(results_path + 'plots/fitted/ic_hyum.svg')
+
+# %%codecell
+############ Fit active exchanges from gibbs sampling to a bernoulli distribution ###############
+gr.fit_rxnsdist_to_bernoulli('CIR_19')
+gr.fit_rxnsdist_to_bernoulli('My_20')
+
+# %%codecell
+############ Plot ridgline for theta credible intervals for exchanges ###############
+sample = 'CIR_19'
+gr.theta_dist[sample] = pd.read_csv(
+    gr.results_path + 'exchanges/fitted/theta_{}.csv'.format(sample), index_col='Unnamed: 0'
+)
+met_names = ['ETOH', 'BUTANEDIOL', 'ACET', 'FORMATE', 'PUTRESCINE', 'PROPANEDIOL',
+             'GLT', 'SUC', 'FUM', 'FRUCTOSE-6P', 'CIT', 'RIBOSE-5P', 'MAL', 'SUCROSE',
+             'GLYCERATE', 'FRUCTOSE-16-DP', 'PYRUVATE', 'GAP', 'KETO-GLUCONATE',
+             'DIHYDROLIPOATE', 'PEP', 'G3P', 'ALANINE', 'SER', 'THR', 'GLN', 'ASPARTATE', 'Null']
+names = dict(zip(gr.theta_dist['CIR_19'].index, met_names))
+
+true_diff = ['_EX_ETOH_Meis', '_EX_BUTANEDIOL_Meis', '_EX_ACET_Meis',
+             '_EX_GLYCERATE_Meis', '_EX_G3P_Meis', '_EX_L_ALPHA_ALANINE_Meis',
+             '_EX_SER_Meis', '_EX_L_ASPARTATE_Meis']
+uncertain_diff = ['_EX_CIT_Meis', '_EX_FRUCTOSE_16_DIPHOSPHATE_Meis']
+colors = dict()
+for met in gr.theta_dist['CIR_19'].index:
+    if met == 'Null':
+        colors[met] = 'rgb(200, 10, 10)'
+    elif met in true_diff:
+        colors[met] = 'rgb(43,140,190)'
+    elif met in uncertain_diff:
+        colors[met] = 'rgb(102,194,164)'
+    else:
+        colors[met] = 'rgb(253,212,158)'
+fig_conf_cir19 = gr.plot_fitted_rxns_confidence('CIR_19', colors, names)
+fig_conf_cir19.update_layout(margin=dict(l=140, r=20, t=20, b=20), width=500)
+fig_conf_cir19.write_image(results_path + 'plots/fitted/rxn_conf_1.svg')
+
+sample = 'My_20'
+gr.theta_dist[sample] = pd.read_csv(
+    gr.results_path + 'exchanges/fitted/theta_{}.csv'.format(sample), index_col='Unnamed: 0'
+)
+true_diff = ['_EX_ETOH_Meis', '_EX_BUTANEDIOL_Meis']
+uncertain_diff = ['_EX_FORMATE_Meis', '_EX_FUM_Meis', '_EX_L_ALPHA_ALANINE_Meis', '_EX_SER_Meis']
+colors = dict()
+for met in gr.theta_dist['CIR_19'].index:
+    if met == 'Null':
+        colors[met] = 'rgb(200, 10, 10)'
+    elif met in true_diff:
+        colors[met] = 'rgb(43,140,190)'
+    elif met in uncertain_diff:
+        colors[met] = 'rgb(102,194,164)'
+    else:
+        colors[met] = 'rgb(253,212,158)'
+
+fig_conf_my_20 = gr.plot_fitted_rxns_confidence('My_20', colors, names)
+fig_conf_my_20.update_yaxes(ticks='', showticklabels=False)
+fig_conf_my_20.update_layout(margin=dict(l=40, r=20, t=20, b=20), width=400)
+fig_conf_my_20.write_image(results_path + 'plots/fitted/rxn_conf_2.svg')
+
+
+# %%codecell
+sample = 'My_20'
+sample_filter = com.taxa_database.loc[:, 'sample'] == sample
+sample_db = com.taxa_database[sample_filter].set_index('id')
+ic_matrix = pd.DataFrame(index=sample_db.index, columns=sample_db.index)
+gr.get_icmatrix_from_fit('My_20', ic_matrix)
+
+# %%codecell
+com.name = 'all_zeros'
+fig_yields, y_df = com.plot_yields(
     media=media,
     carbon_uptake=0.00625,
     metabolites=yield_mets,
     trade_off=0.9
 )
-fig.show()
+fig_yields.show()
 
-fig = com.plot_metoh_ex(
-    media=media,
-    carbon_uptake=0.00625
-)
-fig.show()
-
-com.summary_ex_fluxes(
+com.plot_ex_fluxes(
     media=media,
     carbon_uptake=0.00625,
     trade_off=0.9
 )
-fig = com.plot_interaction_matrix((9, 4))
+fig_ic = com.plot_interaction_matrix((9, 4))
+fig_ic.show()
+
+fig_metoh = com.plot_metoh_ex(
+    media=media,
+    carbon_uptake=0.00625
+)
+fig_metoh.show()
 
 # %%codecell
-ic_cir = pd.read_csv(results_path + 'interaction_matrix/ic_CIR_19.csv', index_col=0)
-ic_my = pd.read_csv(results_path + '/interaction_matrix/ic_My_20.csv', index_col=0)
-fit_cir_pos = run_sampling(ic_cir, chains = 6, iter = 2000, positives = True)
-fit_cir_neg = run_sampling(ic_cir, chains = 6, iter = 2000, positives = False)
-fit_my_pos = run_sampling(ic_my, chains = 6, iter = 2000, positives = True)
-fit_my_neg = run_sampling(ic_my, chains = 6, iter = 2000, positives = False)
+com.name = 'bernoulli'
+actives = dict()
+for sample in ['CIR_19', 'My_20']:
+    actives[sample] = pd.Series(index=to_close)
+    for rxn in to_close:
+        theta = gr.theta_samples[sample].loc[rxn, :].mean()
+        if theta < 0.45:
+            actives[sample][rxn] = 0
+        else:
+            actives[sample][rxn] = int(binomial(size=1, n=1, p=theta))
+com.update_exchanges('CIR_19', actives['CIR_19'])
+com.update_exchanges('My_20', actives['My_20'])
+
+fig_yields_2, y_df = com.plot_yields(
+    media=media,
+    carbon_uptake=0.00625,
+    metabolites=yield_mets,
+    trade_off=0.9
+)
+fig_yields_2.show()
+
+com.plot_ex_fluxes(
+    media=media,
+    carbon_uptake=0.00625,
+    trade_off=0.9
+)
+fig_ic_2 = com.plot_interaction_matrix((9, 4))
+fig_ic_2.show()
+
+fig_metoh_2 = com.plot_metoh_ex(
+    media=media,
+    carbon_uptake=0.00625
+)
+fig_metoh_2.show()
+
+# %%codecell
+ic_cir = pd.read_csv(results_path + 'interaction_matrix/all_zeros/ic_CIR_19.csv', index_col=0)
+ic_my = pd.read_csv(results_path + '/interaction_matrix/all_zeros/ic_My_20.csv', index_col=0)
+fit_cir_pos = run_zinb(ic_cir, chains = 6, iter = 2000, positives = True)
+fit_cir_neg = run_zinb(ic_cir, chains = 6, iter = 2000, positives = False)
+fit_my_pos = run_zinb(ic_my, chains = 6, iter = 2000, positives = True)
+fit_my_neg = run_zinb(ic_my, chains = 6, iter = 2000, positives = False)
 print(fit_cir_pos)
 print(fit_cir_neg)
 print(fit_my_pos)
 print(fit_my_neg)
-arviz.plot_trace(fit_cir_neg, var_names = ['mu', 'phi'])
-arviz.plot_posterior(fit_cir_neg, var_names = ['mu', 'phi'])
-
-
-# %%codecell
-exrxns_meis = []
-for rxn in com.models[com.samples[0]].reactions:
-    if 'EX' in rxn.id and 'Meis' in rxn.id:
-        exrxns_meis.append(rxn.id)
-
-exrxns_meis = exrxns_meis[13:]
-ex_mets = []
-for rxn in com.models[com.samples[0]].reactions:
-    if 'EX' in rxn.id:
-        ex_mets.append(rxn.id[4:-5])
-external_metabolites = list(pd.Series(ex_mets).unique()[0:2])
-b = list(pd.Series(ex_mets).unique()[13:])
-external_metabolites.extend(b)
-external_metabolites = set(external_metabolites)
-to_close = set(com.permanent_close)
-external_metabolites = external_metabolites - to_close
-n_ex = len(exrxns_meis)
-columns = ['Giver', 'Reciver', 'Interaction Coefficient', 'Sample', 'N Blocked']
-# %%codecell
-# columns = ['Giver', 'Reciver', 'Interaction Coefficient', 'Sample', 'N Blocked']
-# with open(com.results_path + 'simulations.csv', 'w+') as file:
-#     pd.DataFrame(columns=columns).to_csv(file, index=False)
-# with open(com.results_path + 'metoh_ex.csv', 'w+') as file:
-#     pd.DataFrame(columns=['Sample', 'Exchanged Metanol', 'N Blocked']).to_csv(file, index=False)
-# with open(com.results_path + 'yields.csv', 'w+') as file:
-#     pd.DataFrame(columns=['Sample', 'Metabolite', 'Yield', 'N Blocked']).to_csv(file, index=False)
-# %%codecell
-step = 6
-n_sim = 24
-carbon_uptake = 0.00625
-missing_dels = [a for a in range(1, int(n_ex / 2), step)]
-missing_dels = [7]
-sample = 'CIR_19'
-sample_filter = com.taxa_database.loc[:, 'sample'] == sample
-sample_db = com.taxa_database[sample_filter].set_index('id')
-for max_del in missing_dels:
-    for n in trange(n_sim):
-        index = [random.randint(0, n_ex - 1) for n in range(max_del)]
-        with com.models[sample] as model:
-            add_boundaries_for_simulation(
-                model, media=media, carbon_uptake=0.00625
-                )
-            for met in pd.Series(exrxns_meis).iloc[index]:
-                rxn = model.reactions.get_by_id(met)
-                rxn.lower_bound = -100
-                rxn.upper_bound = 0
-            micom_model, linear_solution, quadratic_solution, micom_solution, taxa_growth_rates = micom(
-                model, 0.9, sample_db
-            )
-
-        external_fluxes = pd.DataFrame(index = external_metabolites, columns = sample_db.index)
-        for rxn in micom_model.reactions:
-            if '_EX' in rxn.id:
-                metabolite = rxn.id[4:-5]
-                genus_k = rxn.id[-4:]
-                abundance_k = sample_db.loc[genus_k, 'relative_abundance']
-                if metabolite in external_fluxes.index:
-                    external_fluxes.loc[metabolite, genus_k] = 1000 * micom_solution[rxn.id] * abundance_k * list(rxn.metabolites)[0].cmol_by_mol
-
-        external_fluxes.drop(index='CH4', inplace=True)
-        external_fluxes.fillna(0, inplace = True)
-
-        interaction_matrix = pd.DataFrame(index = external_fluxes.columns, columns = external_fluxes.columns, dtype = 'float')
-        for k in interaction_matrix.index:
-            imports = external_fluxes[k] > 0
-            total_imports_k = external_fluxes.loc[imports, k].sum()
-            for j in interaction_matrix.columns:
-                flux_from_j = -external_fluxes.loc[imports, j].sum()
-                total_external = external_fluxes.loc[imports].drop(columns = [j, k], axis=1).sum()
-                imports_others = -total_external[total_external > 0].sum()
-                exports_others = -total_external[total_external < 0].sum()
-                if k == j:
-                    IC_j_in_k = 0
-                elif sign(flux_from_j) == sign(total_imports_k):
-                    IC_j_in_k = (total_imports_k - (total_imports_k - flux_from_j)) / (flux_from_j + exports_others)
-                else:
-                    # IC_j_in_k = -(exports_others - (exports_others + flux_from_j)) / (exports_others + imports_others)
-                    IC_j_in_k = flux_from_j / (exports_others + imports_others)
-                interaction_matrix.loc[k, j] = IC_j_in_k
-        ic_long = com.ic_matrix_melt(interaction_matrix)
-        ic_long.loc[:, 'Sample'] = sample
-        ic_long.loc[:, 'N Blocked'] = max_del
-        with open(com.results_path + 'simulations.csv', 'a+') as simulations:
-            ic_long.to_csv(simulations, index=False, header=False)
-
-        summary = micom_model.metabolites._METOH_pe_Meis.summary(solution=micom_solution)
-        try:
-            metoh_ex = summary.consuming_flux.loc['_EX_METOH_Meis', 'percent']
-        except KeyError as e:
-            print(e)
-            metoh_ex = 0
-
-        with open(com.results_path + 'metoh_ex.csv', 'a+') as file:
-            pd.DataFrame(
-                [[sample, metoh_ex, max_del]],
-                columns=['Sample', 'Exchanged Metanol', 'N Blocked']
-                ).to_csv(file, index=False, header=False)
-
-        biomass_fluxes = micom_solution.fluxes.index.str.contains('biomass')
-        biomass = 0
-        for tax in micom_solution.fluxes.loc[biomass_fluxes].index:
-            biomass += micom_solution[tax] * com.models[sample].metabolites.get_by_id(tax.replace('DM_', '')).cmol_by_mol
-        biomass = round(biomass / carbon_uptake, 2)
-
-        with open(com.results_path + 'yields.csv', 'a+') as file:
-            pd.DataFrame(
-                [[sample, 'Biomass', biomass, max_del]],
-                columns=['Sample', 'Metabolite', 'Yield', 'N Blocked']
-                ).to_csv(file, index=False, header=False)
-
-        for rxn_id in yield_mets.keys():
-            met_yield = round(abs(micom_solution[rxn_id] / carbon_uptake), 2)
-            with open(com.results_path + 'yields.csv', 'a+') as file:
-                pd.DataFrame(
-                    [[sample, yield_mets[rxn_id], met_yield, max_del]],
-                    columns=['Sample', 'Metabolite', 'Yield', 'N Blocked']
-                    ).to_csv(file, index=False, header=False)
-
-# %%codecell
-ic_long = pd.read_csv(results_path + 'simulations.csv')
-px.box(ic_long.query("Reciver=='Meis'"), x='Giver', y='Interaction Coefficient', template='none')
-px.box(ic_long.query("Reciver=='Hyum'"), x='Giver', y='Interaction Coefficient', template='none')
-px.box(ic_long.query("Reciver=='Meus'"), x='Giver', y='Interaction Coefficient', template='none')
+arviz.plot_posterior(fit_cir_pos, var_names = ['mu', 'phi', 'T_max'])
+arviz.plot_posterior(fit_my_pos, var_names = ['mu', 'phi', 'T_max'])

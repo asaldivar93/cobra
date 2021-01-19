@@ -3,7 +3,7 @@ from tools.cobra_tools import add_boundaries_for_simulation, search_biomass_comp
 
 # %%codecell
 cir = cobra.io.read_sbml_model('models/models_gapfilled/Meis.xml')
-cir = cobra.io.read_sbml_model('models/Meis.xml')
+cir = cobra.io.read_sbml_model('models/cir.xml')
 
 # %% codecell
 # Reactions with corrected reversibility for Meis
@@ -149,10 +149,24 @@ with cir as model:
     #         )
     sol = model.optimize()
     print(model.summary(solution = sol))
-    print(model.metabolites.get_by_id('_OXYGEN_MOLECULE_cy_Meis').summary(solution = sol))
+    print(model.metabolites.get_by_id('_FORMALDEHYDE_cy').summary(solution = sol))
 
-sol.status
 
+a = pd.DataFrame(
+    [['O<sub>2</sub>', round(0.009458 / 0.00625, 3)], ['CO<sub>2</sub>', round(0.00424 / 0.00625,3)], ['Biomasa', round(0.05421 * 0.03772482056203139 / 0.00625, 3)]],
+    columns=['Metabolite', 'Rendimiento (C-mol C-mol<sup>-1</sup>)']
+)
+fig = px.bar(
+    a,
+    x='Metabolite',
+    y='Rendimiento (C-mol C-mol<sup>-1</sup>)',
+    template='none',
+    text='Rendimiento (C-mol C-mol<sup>-1</sup>)'
+    )
+fig.show()
+fig.write_html(results_path + 'plots/yields_general.svg')
+
+model.metabolites._biomass.cmol_by_mol
 # %% codecell
 
 bm = search_biomass_components(cir)

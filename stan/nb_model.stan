@@ -29,15 +29,17 @@ generated quantities {
   real Y_0[N]; // Vectore to store H0 values
   real<lower=0> T_sum; // Test statistic indicating the probability that sum(Y_sim) >= sum(Y)
   real<lower=0> T_max; // Test statistic indicating the probability that max(Y_sim) > max(Y)
-  real<lower=0> p_sim; // p value indicating the probability that sum(Y_sim) >= sum(Y_0)
+  real<lower=0> p_sum; // p value indicating the probability that sum(Y_sim) >= sum(Y_0)
+  real<lower=0> p_max; // p value indicating the probability that sum(Y_sim) >= sum(Y_0)
 
+  mu_0 = gamma_rng(a_0, 1);
   for(i in 1:N) {
     Y_sim[i] = neg_binomial_2_rng(mu, phi);
-    mu_0 = gamma_rng(a_0, 1);
     Y_0[i] = neg_binomial_2_rng(mu_0, 4);
   }
 
   T_sum = sum(Y_sim) >= sum(Y);
   T_max = max(Y_sim) >= max(Y);
-  p_sim = sum(Y_sim) >= sum(Y_0);
+  p_sum = sum(Y) >= sum(Y_0);
+  p_max = max(Y) >= max(Y_0);
 }

@@ -1,4 +1,11 @@
+
 import pandas as pd
+import seaborn as sns
+import os
+
+import plotly.graph_objects as go
+from stan.run_stan import (run_st,
+                           run_bernoulli)
 
 
 def search_biomass_components(model, path_to_biomass = 'data_files/biomass.csv'):
@@ -106,127 +113,282 @@ def add_boundaries_for_simulation(
                 )
 
 
-def unused_plotrelative_tradeoff():
-    media = ['_CH4_ou', '_OXYGEN_MOLECULE_ou', '_NITRATE_ou', '_FE_2_ou',
-             '_Pi_ou', '_SULFATE_ou', '_NA__ou', '_MG_2_ou', '_CO_2_ou',
-             '_CL__ou']
-    sample_db = taxa_database[sample].set_index('id')
-    with open('data_files/fit_test.csv', 'w+') as file:
-        pd.DataFrame(
-            columns = ['pivot',
-                       'target',
-                       'relative_abundance',
-                       'fitness',
-                       'relative_fitness',
-                       'relative_k',
-                       'import_flux',
-                       'export_flux']).to_csv(file, index = False)
-    sample_db.index[-3:]
+class gibbs_results():
 
-    for k in ['Meis']:
-        with community_model as model:
-            add_boundaries_for_simulation(model, media=media, carbon_uptake=0.00625)
-            new = sample_db.copy()
-            others = new['seq_counts'].loc[~(new['seq_counts'].index == k)].sum()
-            print(others)
-            if k == 'Chae':
-                range = arange(0.7, 1, 0.05)
-            else:
-                range = arange(0.05, 1, 0.05)
-            for r in range:
-                new_counts = (r * others) / (1 - r)
-                new['seq_counts'][k] = new_counts
-                new['relative_abundance'] = new['seq_counts'] / new['seq_counts'].sum()
-                relative_abundance = new['relative_abundance'][k]
-                micom_model, linear_solution, quadratic_solution, micom_solution, taxa_growth_rates = micom(
-                    model, 0.8, new
+    def __init__(
+        self,
+        results_path,
+        fit_dirs,
+        fitted_mets
+    ):
+        self.yields = pd.DataFrame(columns=['Sample', 'Metabolite', 'Yield', 'N Open'])
+        self.ex_metoh = pd.DataFrame(columns=['Sample', 'Exchanged Metanol', 'N Open'])
+        self.interactions = pd.DataFrame(columns=['Giver', 'Reciver', 'Interaction Coefficient', 'Sample', 'N Open'])
+        self.theta_samples = dict()
+        self.results_path = results_path
+        self.theta_dist = dict()
+
+        for sample in fit_dirs.keys():
+            self.theta_samples[sample] = pd.DataFrame(index=fitted_mets)
+            for dir in fit_dirs[sample]:
+                self.yields = self.yields.append(
+                    pd.read_csv(
+                        self.results_path + dir + '/yields.csv'
+                    )
                 )
-                print(relative_abundance)
-                if micom_solution.status == 'optimal':
-                    average_fitness = 0
-                    for gen in taxa_growth_rates:
-                        gen_k = gen.id[-4:]
-                        abundance_k = new.loc[gen_k, 'relative_abundance']
-                        average_fitness += taxa_growth_rates[gen]
-                        if gen_k == k:
-                            fitness_k = taxa_growth_rates[gen]
+                self.ex_metoh = self.ex_metoh.append(
+                    pd.read_csv(
+                        self.results_path + dir + '/ex_metoh.csv.csv'
+                    )
+                )
+                self.interactions = self.interactions.append(
+                    pd.read_csv(
+                        self.results_path + dir + '/interactions.csv'
+                    )
+                )
+                self.theta_samples[sample] = self.theta_samples[sample].join(
+                    pd.read_csv(
+                        self.results_path + dir + '/theta_samples.csv', index_col='Unnamed: 0'
+                    ),
+                    lsuffix='l',
+                    rsuffix='r'
+                )
+            self.interactions = self.interactions.drop(self.interactions[self.interactions['Interaction Coefficient'] > 1].index)
+            self.interactions = self.interactions.drop(self.interactions[self.interactions['Interaction Coefficient'] < -1].index)
 
-                    for gen in taxa_growth_rates:
-                        gen_k = gen.id[-4:]
-                        abundance_k = new.loc[gen_k, 'relative_abundance']
-                        fitness = taxa_growth_rates[gen]
-                        relative_fitness = fitness / average_fitness
-                        relative_k = fitness / fitness_k
-                        pivot_genus = sample_db.loc[k, 'Genus']
-                        target_genus = sample_db.loc[gen_k, 'Genus']
-                        import_flux = 0
-                        export_flux = 0
-                        for rxn in micom_model.reactions:
-                            ind_in_id = [ind in rxn.id for ind in ['EX', gen_k]]
-                            if all(ind_in_id):
-                                if micom_solution[rxn.id] > 0:
-                                    import_flux += micom_solution[rxn.id] * list(rxn.metabolites)[0].cmol_by_mol
-                                elif micom_solution[rxn.id] < 0:
-                                    export_flux += micom_solution[rxn.id] * list(rxn.metabolites)[0].cmol_by_mol
-                        import_flux = import_flux * abundance_k * 1000
-                        export_flux = export_flux * abundance_k * 1000
+    def get_icmatrix_from_fit(self, sample, ic_matrix):
+        ic_long = self.interactions.query("Sample==@sample")
+        for rec in ic_matrix.columns:
+            print(rec)
+            for giv in ic_matrix.index:
+                Y = ic_long.query("Reciver==@rec").query("Giver==@giv")['Interaction Coefficient'].to_numpy()
+                fit = run_st(Y)
+                ic = fit.summary(pars= ['mu'])['summary'][0][0]
+                ic_matrix.loc[rec, giv] = ic
 
-                        with open('data_files/fit_test.csv', 'a+') as fitness_database:
-                            pd.DataFrame(
-                                [[pivot_genus,
-                                  target_genus,
-                                  relative_abundance,
-                                  fitness,
-                                  relative_fitness,
-                                  relative_k,
-                                  import_flux,
-                                  export_flux]],
-                                columns = ['pivot',
-                                           'target',
-                                           'relative_abundance',
-                                           'fitness',
-                                           'relative_fitness',
-                                           'relative_k',
-                                           'import_flux',
-                                           'export_flux']).to_csv(fitness_database, header=False, index=False)
-                else:
-                    for gen in taxa_growth_rates:
-                        gen_k = gen.id[-4:]
-                        fitness = 0
-                        relative_fitness = 0
-                        pivot_genus = sample_db.loc[k, 'Genus']
-                        target_genus = sample_db.loc[gen_k, 'Genus']
-                        import_flux = 0
-                        export_flux = 0
-                        relative_k = 0
-                        with open('data_files/fit_test.csv', 'a+') as fitness_database:
-                            pd.DataFrame(
-                                [[pivot_genus,
-                                  target_genus,
-                                  relative_abundance,
-                                  fitness,
-                                  relative_fitness,
-                                  relative_k,
-                                  import_flux,
-                                  export_flux]],
-                                columns = ['pivot',
-                                           'target',
-                                           'relative_abundance',
-                                           'fitness',
-                                           'relative_fitness',
-                                           'relative_k',
-                                           'import_flux',
-                                           'export_flux']).to_csv(fitness_database, header=False, index=False)
+        ic_matrix = ic_matrix.astype('float')
+        try:
+            ic_matrix.to_csv(self.results_path + 'interaction_matrix/fitted/ic_{}.csv'.format(sample))
+        except FileNotFoundError:
+            os.mkdir(self.results_path + 'interaction_matrix/fitted')
+            ic_matrix.to_csv(self.results_path + 'interaction_matrix/fitted/ic_{}.csv'.format(sample))
 
-    # %%codecell
-    fit_test = pd.read_csv('data_files/fit_test.csv')
-    fit_test.head(17)
+        fig = sns.heatmap(
+            ic_matrix,
+            cmap = sns.diverging_palette(41, 200, s=100, l=45, sep=1, center='light', as_cmap=True),
+            vmin = -1,
+            vmax= 1)
 
-    fit_test.tail(17)
+        try:
+            fig.figure.savefig(self.results_path + 'plots/fitted/ic_{}.svg'.format(sample))
+        except FileNotFoundError:
+            os.mkdir(self.results_path + 'plots/fitted/ic_{}.svg'.format(sample))
+            fig.figure.savefig(self.results_path + 'plots/fitted/ic_{}.svg'.format(sample))
+        return fig, ic_matrix
 
-    fit_test['export_flux'] = -fit_test['export_flux']
-    fitness_database = pd.read_csv('data_files/fitness_database.csv')
-    pivot = fitness_database.query("pivot=='Methylocystis'")
-    px.line(pivot, x = 'relative_abundance', y = 'relative_fitness', line_group = 'target', color = 'target', log_y = True)
-    px.line(fit_test, x = 'relative_abundance', y = 'import_flux', line_group = 'target', color = 'target', log_y = True)
-    px.line(fit_test, x = 'relative_abundance', y = 'fitness', line_group = 'target', color = 'target', log_y = True)
+    def fit_rxnsdist_to_bernoulli(self, sample, a=2, b=2, a0=200, b0=200, iter=2000, chains=4):
+        # Get number of samples in Stan
+        Y = self.theta_samples[sample].iloc[0, :]
+        fit = run_bernoulli(
+            Y=Y, a=a, b=b, a0=a0, b0=b0, iter=iter, chains=chains
+        )
+        n_samples = len(fit.extract(pars=['theta'])['theta'])
+
+        self.theta_dist[sample] = pd.DataFrame(index=self.theta_samples[sample].index, columns =range(n_samples))
+        for rxn in self.theta_dist[sample].index:
+            print(rxn)
+            # data is the binary vector from gibbs sampling, for rxn_i
+            Y = self.theta_samples[sample].loc[rxn, :]
+            fit = run_bernoulli(
+                Y=Y, a=a, b=b, a0=a0, b0=b0, iter=iter, chains=chains
+            )
+            self.theta_dist[sample].loc[rxn, :] = fit.extract(pars=['theta'])['theta']
+        self.theta_dist[sample].loc['Null', :] = fit.extract(pars=['theta_0'])['theta_0']
+        try:
+            self.theta_dist[sample].to_csv(self.results_path + 'exchanges/fitted/theta_{}.csv'.format(sample))
+        except FileNotFoundError:
+            os.mkdir(self.results_path + 'exchanges/fitted/')
+            self.theta_dist[sample].to_csv(self.results_path + 'exchanges/fitted/theta_{}.csv'.format(sample))
+
+    def plot_fitted_rxns_confidence(self, sample, colors, names):
+        try:
+            self.theta_dist[sample]
+        except KeyError:
+            self.theta_dist[sample] = pd.read_csv(
+                self.results_path + 'exchanges/fitted/theta_{}.csv'.format(sample), index_col='Unnamed: 0'
+            )
+        n_rxns = len(self.theta_dist[sample].index)
+        fig = go.Figure()
+        for rxn in self.theta_dist[sample].index:
+            fig.add_trace(
+                go.Violin(
+                    x=self.theta_dist[sample].loc[rxn, :].to_numpy(),
+                    line_color=colors[rxn],
+                    showlegend=False,
+                    name=names[rxn]
+                    )
+                )
+
+        fig.update_traces(
+            orientation='h', side='positive', width=3, points=False
+            )
+        fig.update_layout(
+            yaxis_showgrid=True,
+            xaxis_showgrid=False,
+            xaxis_zeroline=False,
+            template='none',
+            margin=dict(l=150, r=20, t=20, b=20)
+            )
+        fig.add_shape(
+            type='line',
+            x0=0.45,
+            y0=0,
+            x1=0.45,
+            y1=n_rxns + 1,
+            line=dict(color='Black', dash='dash'),
+            xref='x', yref='y'
+        )
+        fig.add_shape(
+            type='line',
+            x0=0.55, y0=0,
+            x1=0.55, y1=n_rxns + 1,
+            line=dict(color='Black', dash='dash'),
+            xref='x', yref='y'
+        )
+        fig.update_yaxes(
+            showticklabels=True, dtick=1
+            )
+
+        try:
+            fig.write_image(self.results_path + 'plots/fitted/rxns_confidence_{}.svg'.format(sample))
+        except FileNotFoundError:
+            os.mkdir(self.results_path + 'plots/fitted/')
+            fig.write_image(self.results_path + 'plots/fitted/rxns_confidence_{}.svg'.format(sample))
+
+        return fig
+
+
+# def unused_plotrelative_tradeoff():
+#     media = ['_CH4_ou', '_OXYGEN_MOLECULE_ou', '_NITRATE_ou', '_FE_2_ou',
+#              '_Pi_ou', '_SULFATE_ou', '_NA__ou', '_MG_2_ou', '_CO_2_ou',
+#              '_CL__ou']
+#     sample_db = taxa_database[sample].set_index('id')
+#     with open('data_files/fit_test.csv', 'w+') as file:
+#         pd.DataFrame(
+#             columns = ['pivot',
+#                        'target',
+#                        'relative_abundance',
+#                        'fitness',
+#                        'relative_fitness',
+#                        'relative_k',
+#                        'import_flux',
+#                        'export_flux']).to_csv(file, index = False)
+#     sample_db.index[-3:]
+#
+#     for k in ['Meis']:
+#         with community_model as model:
+#             add_boundaries_for_simulation(model, media=media, carbon_uptake=0.00625)
+#             new = sample_db.copy()
+#             others = new['seq_counts'].loc[~(new['seq_counts'].index == k)].sum()
+#             print(others)
+#             if k == 'Chae':
+#                 range = arange(0.7, 1, 0.05)
+#             else:
+#                 range = arange(0.05, 1, 0.05)
+#             for r in range:
+#                 new_counts = (r * others) / (1 - r)
+#                 new['seq_counts'][k] = new_counts
+#                 new['relative_abundance'] = new['seq_counts'] / new['seq_counts'].sum()
+#                 relative_abundance = new['relative_abundance'][k]
+#                 micom_model, linear_solution, quadratic_solution, micom_solution, taxa_growth_rates = micom(
+#                     model, 0.8, new
+#                 )
+#                 print(relative_abundance)
+#                 if micom_solution.status == 'optimal':
+#                     average_fitness = 0
+#                     for gen in taxa_growth_rates:
+#                         gen_k = gen.id[-4:]
+#                         abundance_k = new.loc[gen_k, 'relative_abundance']
+#                         average_fitness += taxa_growth_rates[gen]
+#                         if gen_k == k:
+#                             fitness_k = taxa_growth_rates[gen]
+#
+#                     for gen in taxa_growth_rates:
+#                         gen_k = gen.id[-4:]
+#                         abundance_k = new.loc[gen_k, 'relative_abundance']
+#                         fitness = taxa_growth_rates[gen]
+#                         relative_fitness = fitness / average_fitness
+#                         relative_k = fitness / fitness_k
+#                         pivot_genus = sample_db.loc[k, 'Genus']
+#                         target_genus = sample_db.loc[gen_k, 'Genus']
+#                         import_flux = 0
+#                         export_flux = 0
+#                         for rxn in micom_model.reactions:
+#                             ind_in_id = [ind in rxn.id for ind in ['EX', gen_k]]
+#                             if all(ind_in_id):
+#                                 if micom_solution[rxn.id] > 0:
+#                                     import_flux += micom_solution[rxn.id] * list(rxn.metabolites)[0].cmol_by_mol
+#                                 elif micom_solution[rxn.id] < 0:
+#                                     export_flux += micom_solution[rxn.id] * list(rxn.metabolites)[0].cmol_by_mol
+#                         import_flux = import_flux * abundance_k * 1000
+#                         export_flux = export_flux * abundance_k * 1000
+#
+#                         with open('data_files/fit_test.csv', 'a+') as fitness_database:
+#                             pd.DataFrame(
+#                                 [[pivot_genus,
+#                                   target_genus,
+#                                   relative_abundance,
+#                                   fitness,
+#                                   relative_fitness,
+#                                   relative_k,
+#                                   import_flux,
+#                                   export_flux]],
+#                                 columns = ['pivot',
+#                                            'target',
+#                                            'relative_abundance',
+#                                            'fitness',
+#                                            'relative_fitness',
+#                                            'relative_k',
+#                                            'import_flux',
+#                                            'export_flux']).to_csv(fitness_database, header=False, index=False)
+#                 else:
+#                     for gen in taxa_growth_rates:
+#                         gen_k = gen.id[-4:]
+#                         fitness = 0
+#                         relative_fitness = 0
+#                         pivot_genus = sample_db.loc[k, 'Genus']
+#                         target_genus = sample_db.loc[gen_k, 'Genus']
+#                         import_flux = 0
+#                         export_flux = 0
+#                         relative_k = 0
+#                         with open('data_files/fit_test.csv', 'a+') as fitness_database:
+#                             pd.DataFrame(
+#                                 [[pivot_genus,
+#                                   target_genus,
+#                                   relative_abundance,
+#                                   fitness,
+#                                   relative_fitness,
+#                                   relative_k,
+#                                   import_flux,
+#                                   export_flux]],
+#                                 columns = ['pivot',
+#                                            'target',
+#                                            'relative_abundance',
+#                                            'fitness',
+#                                            'relative_fitness',
+#                                            'relative_k',
+#                                            'import_flux',
+#                                            'export_flux']).to_csv(fitness_database, header=False, index=False)
+#
+#     # %%codecell
+#     fit_test = pd.read_csv('data_files/fit_test.csv')
+#     fit_test.head(17)
+#
+#     fit_test.tail(17)
+#
+#     fit_test['export_flux'] = -fit_test['export_flux']
+#     fitness_database = pd.read_csv('data_files/fitness_database.csv')
+#     pivot = fitness_database.query("pivot=='Methylocystis'")
+#     px.line(pivot, x = 'relative_abundance', y = 'relative_fitness', line_group = 'target', color = 'target', log_y = True)
+#     px.line(fit_test, x = 'relative_abundance', y = 'import_flux', line_group = 'target', color = 'target', log_y = True)
+#     px.line(fit_test, x = 'relative_abundance', y = 'fitness', line_group = 'target', color = 'target', log_y = True)
