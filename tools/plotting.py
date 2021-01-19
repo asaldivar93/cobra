@@ -20,7 +20,7 @@ def plot_heatmap(
     )
 ):
     row_linkage = linkage(
-        pdist(dataframe.to_numpy()), method = "ward", optimal_ordering = True
+        pdist(dataframe.to_numpy()), method = "ward"
     )
 
     row_cluster = fcluster(

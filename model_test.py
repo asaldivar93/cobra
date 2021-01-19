@@ -164,7 +164,7 @@ fig = px.bar(
     text='Rendimiento (C-mol C-mol<sup>-1</sup>)'
     )
 fig.show()
-fig.write_html(results_path + 'plots/yields_general.svg')
+fig.write_image(results_path + 'plots/yields_general.svg')
 
 model.metabolites._biomass.cmol_by_mol
 # %% codecell
