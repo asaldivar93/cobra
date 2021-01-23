@@ -46,6 +46,7 @@ yield_mets = dict(
 samples = dict(CIR_19 = 0.0063, My_20 = 0.00913)
 com.set_samples(samples)
 
+(com.seq_counts['My_20']>0).sum()
 # %% codecell
 # Loas models for each sample
 com.load_models(samples, to_close=to_close, close_ex=True, micom=True)
@@ -400,3 +401,12 @@ print(fit_my_pos)
 print(fit_my_neg)
 arviz.plot_posterior(fit_cir_pos, var_names = ['mu', 'phi', 'T_max'])
 arviz.plot_posterior(fit_my_pos, var_names = ['mu', 'phi', 'T_max'])
+
+
+import seaborn as sns
+from tools.plotting import plot_heatmap
+a = pd.read_csv(results_path + 'exchanges/all_zeros/import_clr_CIR_19.csv', index_col='Unnamed: 0')
+b = pd.read_csv(results_path + 'exchanges/all_zeros/export_clr_CIR_19.csv', index_col='Unnamed: 0')
+
+plot_heatmap(a, cmap = sns.diverging_palette(271, 130, s = 80, l = 47, sep = 20, as_cmap = True))
+plot_heatmap(b, cmap = sns.diverging_palette(271, 130, s = 80, l = 47, sep = 20, as_cmap = True))
