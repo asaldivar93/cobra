@@ -1,0 +1,27 @@
+99.02%  -0.002408  _GLYOHMETRANS_RXN  _GLY_cy + _METHYLENE_THF_cy + _WATER_cy <=> _SER_cy + _THF_cy
+
+99.28%  -0.002391  _SERINE__GLYOXYLATE_AMINOTRANSFERASE_RXN  _GLYOX_cy + _SER_cy <=> _GLY_cy + _OH_PYR_cy
+92.81%  -0.002218  _2PGADEHYDRAT_RXN  _2_PG_cy <=> _PHOSPHO_ENOL_PYRUVATE_cy + _WATER_cy
+90.67%  -0.002011  _PEPCARBOX_RXN  _HCO3_cy + _PHOSPHO_ENOL_PYRUVATE_cy --> _OXALACETIC_ACID_cy + _Pi_cy
+27.62% -0.0005556  _MALATE_DEH_RXN  _NADH_cy + _OXALACETIC_ACID_cy + _PROTON_cy <=> _MAL_cy + _NAD_cy
+
+Consumo de MAL
+99.99%  -0.002147  _MALATE__COA_LIGASE_RXN   _ATP_cy + _CO_A_cy + _MAL_cy <=> _ADP_cy + _CPD_208_cy + _Pi_cy
+
+Regeneración de MAL
+74.12%  0.001591     _FUMHYDR_RXN                                    _MAL_cy <=> _FUM_cy + _WATER_cy
+25.88% 0.0005556  _MALATE_DEH_RXN  _NADH_cy + _OXALACETIC_ACID_cy + _PROTON_cy <=> _MAL_cy + _NAD_cy
+
+Producción de GLYOX
+ 89.81%  0.002147  _MALYL_COA_LYASE_RXN      _CPD_208_cy <=> _ACETYL_COA_cy + _GLYOX_cy
+ 10.19% 0.0002437             _RXN_8961  _CPD_9409_cy <=> _GLYOX_cy + _PROPIONYL_COA_cy
+total 0.0023907
+
+Producción de GLY
+1.67% -4.115E-05   _GCVMULTI_RXN '_GLY_cy + _NAD_cy + _THF_cy <=> _AMMONIUM_cy + _CARBON_DIOXIDE_cy + _METHYLENE_THF_cy + _NADH_cy'
+1.67% de MEthylene-THF
+A TCA por oxalacetato 0.0014557
+En TCA hasta 2-oxoglutarato 0.001402
+A TCA por propionil-coa 0.0002437
+En TCA hasta FUM 0.001646
+En TCA hasta MAL 0.001591

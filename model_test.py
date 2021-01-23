@@ -111,8 +111,8 @@ for rxn in cir.reactions:
         rxn.lower_bound = 0
         rxn.upper_bound = 0
     if '_GCVMULTI_RXN' in rxn.id:
-        rxn.lower_bound = 0
-        rxn.upper_bound = 0
+        rxn.lower_bound = -100
+        rxn.upper_bound = 100
     if '_RXN_7566' in rxn.id:
         rxn.lower_bound = 0
         rxn.upper_bound = 0
@@ -120,8 +120,8 @@ for rxn in cir.reactions:
         rxn.lower_bound = -100
         rxn.upper_bound = 0
     if '_GLUTAMATE_DEHYDROGENASE_RXN' in rxn.id:
-        rxn.lower_bound = 0
-        rxn.upper_bound = 0
+        rxn.lower_bound = -100
+        rxn.upper_bound = 100
     if '_KETOGLUTREDUCT_RXN' in rxn.id:
         rxn.lower_bound = 0
         rxn.upper_bound = 0
@@ -131,9 +131,38 @@ for rxn in cir.reactions:
     if '_2_METHYLCITRATE_SYNTHASE_RXN' in rxn.id:
         rxn.lower_bound = 0
         rxn.upper_bound = 0
+    if '_PROPKIN_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_3_HYDROXYBUTYRATE_DEHYDROGENASE_RXN' in rxn.id:
+        rxn.lower_bound = -100
+        rxn.upper_bound = 100
+    if '_ACETOACETYL_COA_TRANSFER_RXN' in rxn.id:
+        rxn.lower_bound = -100
+        rxn.upper_bound = 100
+    if '_RXN_8807' in rxn.id:
+        rxn.lower_bound = -100
+        rxn.upper_bound = 100
+    if '_ACETATEKIN_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_ACETATE__COA_LIGASE_ADP_FORMING_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+
+    if '_ASPAMINOTRANS_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+    if '_GLYCINE_AMINOTRANSFERASE_RXN' in rxn.id:
+        rxn.lower_bound = 0
+        rxn.upper_bound = 0
+
+
+
+
+
 
 # %% codecell
-
 media = ['_CH4_ou', '_OXYGEN_MOLECULE_ou', '_NITRATE_ou', '_FE_2_ou',
          '_Pi_ou', '_SULFATE_ou', '_NA__ou', '_MG_2_ou', '_CO_2_ou',
          '_CL__ou']
@@ -149,9 +178,20 @@ with cir as model:
     #         )
     sol = model.optimize()
     print(model.summary(solution = sol))
-    print(model.metabolites.get_by_id('_FORMALDEHYDE_cy').summary(solution = sol))
-
-
+    print(model.metabolites.get_by_id('_METHYLENE_THF_cy').summary(solution = sol))
+4.115E-05 + 0.0023907 -1.779E-05-2.908E-07-5.784E-06
+0.001402+0.0002437
+for rxn in cir.reactions:
+    if cir.metabolites.get_by_id('_ACETYL_COA_cy') in rxn.metabolites.keys():
+        if cir.metabolites.get_by_id('_PYRUVATE_cy') in rxn.metabolites.keys():
+            print(rxn.id, rxn.lower_bound, rxn.upper_bound, rxn.build_reaction_string())
+cir.reactions.get_by_id('_GCVMULTI_RXN').build_reaction_string()
+for met in cir.metabolites:
+    if '_ACET_cy' in met.id:
+        for rxn in met.reactions:
+            print(rxn.id,rxn.lower_bound, rxn.upper_bound, rxn.build_reaction_string())
+# %%codecell
+0.0006309*2
 a = pd.DataFrame(
     [['O<sub>2</sub>', round(0.009458 / 0.00625, 3)], ['CO<sub>2</sub>', round(0.00424 / 0.00625,3)], ['Biomasa', round(0.05421 * 0.03772482056203139 / 0.00625, 3)]],
     columns=['Metabolite', 'Rendimiento (C-mol C-mol<sup>-1</sup>)']
