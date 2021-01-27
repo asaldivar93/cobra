@@ -173,7 +173,7 @@ with cir as model:
     #         )
     sol = model.optimize()
     print(model.summary(solution = sol))
-    print(model.metabolites.get_by_id('_METHYLENE_THF_cy').summary(solution = sol))
+    print(model.metabolites.get_by_id('_ACETYL_COA_cy').summary(solution = sol))
 
 # %%codecell
 a = pd.DataFrame(
@@ -187,6 +187,15 @@ fig = px.bar(
     template='none',
     text='Rendimiento (C-mol C-mol<sup>-1</sup>)'
     )
+fig.update_layout(
+    width=364,
+    height=260,
+    font=dict(
+        family='Calibri',
+        size=12
+    ),
+    margin=dict(l=60, r=30, t=30, b=50),
+)
 fig.show()
 fig.write_image(results_path + 'plots/yields_general.svg')
 

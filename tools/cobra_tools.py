@@ -2,6 +2,7 @@
 import pandas as pd
 import seaborn as sns
 import os
+from numpy import mean
 
 import plotly.graph_objects as go
 from stan.run_stan import (run_st,
@@ -157,13 +158,16 @@ class gibbs_results():
             self.interactions = self.interactions.drop(self.interactions[self.interactions['Interaction Coefficient'] < -1].index)
 
     def get_icmatrix_from_fit(self, sample, ic_matrix):
+        a = 0
         ic_long = self.interactions.query("Sample==@sample")
         for rec in ic_matrix.columns:
             print(rec)
             for giv in ic_matrix.index:
-                Y = ic_long.query("Reciver==@rec").query("Giver==@giv")['Interaction Coefficient'].to_numpy()
-                fit = run_st(Y)
-                ic = fit.summary(pars= ['mu'])['summary'][0][0]
+                Y = ic_long.query("Reciver==@rec").query("Giver==@giv").query("`Interaction Coefficient`>@a")['Interaction Coefficient'].to_numpy()
+                Y_l = ic_long.query("Reciver==@rec").query("Giver==@giv").query("`Interaction Coefficient`<@a")['Interaction Coefficient'].to_numpy()
+                fit = run_st(Y=Y, L=0, U=1)
+                fit2 = run_st(Y=Y_l, L=-1, U=0)
+                ic = mean(fit.extract('mu')['mu'] + fit2.extract('mu')['mu'])
                 ic_matrix.loc[rec, giv] = ic
 
         ic_matrix = ic_matrix.astype('float')
@@ -182,7 +186,7 @@ class gibbs_results():
         try:
             fig.figure.savefig(self.results_path + 'plots/fitted/ic_{}.svg'.format(sample))
         except FileNotFoundError:
-            os.mkdir(self.results_path + 'plots/fitted/ic_{}.svg'.format(sample))
+            os.mkdir(self.results_path + 'plots/fitted')
             fig.figure.savefig(self.results_path + 'plots/fitted/ic_{}.svg'.format(sample))
         return fig, ic_matrix
 
@@ -266,6 +270,108 @@ class gibbs_results():
             fig.write_image(self.results_path + 'plots/fitted/rxns_confidence_{}.svg'.format(sample))
 
         return fig
+
+    def plot_ic_confidence(self, giver, tax_list, color):
+        a = 0
+        fig = go.Figure()
+        for tax in tax_list:
+            Y = self.interactions.query("Giver==@giver").query("Reciver==@tax").query("Sample=='CIR_19'").query("`Interaction Coefficient`>@a")['Interaction Coefficient']
+            Y_l = self.interactions.query("Giver==@giver").query("Reciver==@tax").query("Sample=='CIR_19'").query("`Interaction Coefficient`<@a")['Interaction Coefficient']
+            fit = run_st(Y=Y, L=0, U=1)
+            fit2 = run_st(Y=Y_l, L=-1, U=0)
+            fig.add_trace(
+                go.Violin(
+                    x=fit.extract('mu')['mu'] + fit2.extract('mu')['mu'],
+                    showlegend=False,
+                    name=tax,
+                    line_color=color[tax]
+                )
+            )
+
+        fig.update_traces(
+            orientation='h',
+            side='positive',
+            width=2,
+            points=False,
+            meanline_visible=True
+            )
+        fig.update_layout(
+            yaxis_showgrid=True,
+            xaxis_showgrid=False,
+            xaxis_zeroline=False,
+            template='none',
+            margin=dict(l=60, r=20, t=20, b=50),
+            )
+        fig.add_shape(
+            type='line',
+            x0=-0.1, y0=0,
+            x1=-0.1, y1=len(tax_list) + 1,
+            line=dict(color='Black', dash='dash'),
+            xref='x', yref='y'
+        )
+        fig.add_shape(
+            type='line',
+            x0=0.1, y0=0,
+            x1=0.1, y1=len(tax_list) + 1,
+            line=dict(color='Black', dash='dash'),
+            xref='x', yref='y'
+        )
+        fig.update_xaxes(
+            title=dict(
+                text="Coeficiente de Interacción",
+            ),
+        )
+
+        fig2 = go.Figure()
+        for tax in tax_list:
+            Y = self.interactions.query("Giver==@giver").query("Reciver==@tax").query("Sample=='My_20'").query("`Interaction Coefficient`>@a")['Interaction Coefficient']
+            Y_l = self.interactions.query("Giver==@giver").query("Reciver==@tax").query("Sample=='My_20'").query("`Interaction Coefficient`<@a")['Interaction Coefficient']
+            fit = run_st(Y=Y, L=0, U=1)
+            fit2 = run_st(Y=Y_l, L=-1, U=0)
+            fig2.add_trace(
+                go.Violin(
+                    x=fit.extract('mu')['mu'] + fit2.extract('mu')['mu'],
+                    showlegend=False,
+                    name=tax,
+                    line_color=color[tax]
+                )
+            )
+
+        fig2.update_traces(
+            orientation='h',
+            side='positive',
+            width=2,
+            points=False,
+            meanline_visible=True
+            )
+        fig2.update_layout(
+            yaxis_showgrid=True,
+            xaxis_showgrid=False,
+            xaxis_zeroline=False,
+            template='none',
+            margin=dict(l=60, r=20, t=20, b=50),
+            )
+        fig2.add_shape(
+            type='line',
+            x0=-0.1, y0=0,
+            x1=-0.1, y1=len(tax_list),
+            line=dict(color='Black', dash='dash'),
+            xref='x', yref='y'
+        )
+        fig2.add_shape(
+            type='line',
+            x0=0.1, y0=0,
+            x1=0.1, y1=len(tax_list),
+            line=dict(color='Black', dash='dash'),
+            xref='x', yref='y'
+        )
+        fig2.update_xaxes(
+            title=dict(
+                text="Coeficiente de Interacción",
+            ),
+        )
+
+        return fig, fig2
 
 
 # def unused_plotrelative_tradeoff():

@@ -143,6 +143,8 @@ def get_init(data):
 
 def run_st(
     Y,
+    L,
+    U,
     mu_0=0,
     sigma_0=2,
     a_n=2,
@@ -156,6 +158,8 @@ def run_st(
     data = dict(
         N=len(Y),
         Y=Y,
+        L=L,
+        U=U,
         mu_0=mu_0,
         sigma_0=sigma_0,
         a_n=a_n,

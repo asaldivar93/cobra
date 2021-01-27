@@ -1,7 +1,8 @@
 data{
   int N; // Number of samples
   real Y[N]; // Interaction coefficients
-
+  real L;
+  real U;
   real mu_0; // mean prior for mu
   real sigma_0; // sigma prior for mu
   real a_n; // Shape parameter for gamma prior on nu
@@ -11,7 +12,7 @@ data{
 }
 
 parameters {
-  real<lower=-1, upper=1> mu; // mean of data
+  real<lower=L, upper=U> mu; // mean of data
   real<lower=0> sigma; // variance
   real<lower=0> nu; // degrees of fredom
 }
