@@ -201,6 +201,12 @@ fig.write_image(results_path + 'plots/yields_general.svg')
 
 model.metabolites._biomass.cmol_by_mol
 # %% codecell
+for met in cir.metabolites:
+    if '347' in met.id:
+        print(met.id)
+
+
+# %% codecell
 
 bm = search_biomass_components(cir)
 class_filter = bm['class'].isin(

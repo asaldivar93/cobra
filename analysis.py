@@ -48,7 +48,7 @@ com.set_samples(samples)
 
 # %% codecell
 # Loas models for each sample
-com.load_models(samples, to_close=to_close, close_ex=True, micom=True)
+com.load_models(samples, to_close=to_close, close_ex=False, micom=True)
 
 # %%codecell
 ############ Fit models using adaptive gibbs sampling ###############
@@ -197,7 +197,7 @@ fig_x = go.Figure()
 for sample in ['CIR_19', 'My_20']:
     fig_x.add_trace(
         go.Violin(
-            x=gr.yields.query("Sample==@sample").query("Metabolite=='Biomass'")['Yield']-0.1,
+            x=gr.yields.query("Sample==@sample").query("Metabolite=='Biomass'")['Yield'] - 0.1,
             showlegend=False,
             name=sample
         )
@@ -325,240 +325,151 @@ fig2.write_image(results_path + 'plots/fitted/ic_meus.svg')
 fig3.write_image(results_path + 'plots/fitted/ic_hyum.svg')
 
 # %%codecell
+tax_cir = ['Meus', 'Hyum', 'Seum']
+tax_my = ['Meus', 'Hyum', 'Seum', 'Raer']
+c_cir = ['rgb(102,194,164)'] * len(tax_cir)
+colors_cir = dict(zip(tax_cir, c_cir))
+c_my = ['rgb(102,194,164)'] * len(tax_my)
+colors_my = dict(zip(tax_my, c_my))
+fmeis1, fmeis2 = gr.plot_ic_confidence('Meis', tax_list = [tax_cir, tax_my], color = [colors_cir, colors_my])
 
-tax_list = ['Meus', 'Hyum', 'Seum', 'Teas', 'Raer']
-c = ['rgb(102,194,164)'] * 5
-colors = dict(zip(tax_list, c))
-fmeis1, fmeis2 = gr.plot_ic_confidence('Meis', tax_list, colors)
 fmeis1.update_layout(
     margin=dict(l=40, r=20, t=20, b=60),
     width=286,
     height=250,
-    title=dict(
-        text='CIR_19',
-        font=dict(size=14, family='Calibri'),
-        x=0.5
-        )
 )
 fmeis1.update_xaxes(
     showticklabels=True, dtick=0.25,
     range=[-1, 1]
 )
 fmeis2.update_layout(
-    margin=dict(l=20, r=20, t=20, b=60),
-    width=266,
+    margin=dict(l=40, r=20, t=20, b=60),
+    width=286,
     height=250,
-    title=dict(
-        text='My_20',
-        font=dict(size=14, family='Calibri'),
-        x=0.5
-        )
 )
 fmeis2.update_xaxes(
     showticklabels=True, dtick=0.25,
     range=[-1, 1]
 )
-fmeis2.update_yaxes(
-    ticks='',
-    showticklabels=False
-)
+
 fmeis1.write_image(results_path + '/plots/fitted/ic_confidence/meis-cir19.svg')
 fmeis2.write_image(results_path + '/plots/fitted/ic_confidence/meis-my10.svg')
 
-tax_list = ['Meis', 'Hyum', 'Seum', 'Teas', 'Raer']
-c = ['rgb(102,194,164)'] * 5
-colors = dict(zip(tax_list, c))
-fmeis1, fmeis2 = gr.plot_ic_confidence('Meus', tax_list, colors)
+tax_cir = ['Meis', 'Hyum', 'Seum']
+tax_my = ['Meis', 'Hyum', 'Seum', 'Raer']
+c_cir = ['rgb(102,194,164)'] * len(tax_cir)
+colors_cir = dict(zip(tax_cir, c_cir))
+c_my = ['rgb(102,194,164)'] * len(tax_my)
+colors_my = dict(zip(tax_my, c_my))
+fmeis1, fmeis2 = gr.plot_ic_confidence('Meus', tax_list = [tax_cir, tax_my], color = [colors_cir, colors_my])
 fmeis1.update_layout(
     margin=dict(l=40, r=20, t=20, b=60),
     width=286,
     height=250,
-    title=dict(
-        text='CIR_19',
-        font=dict(size=14, family='Calibri'),
-        x=0.5
-        )
 )
 fmeis1.update_xaxes(
     showticklabels=True, dtick=0.25,
     range=[-1, 1]
 )
 fmeis2.update_layout(
-    margin=dict(l=20, r=20, t=20, b=60),
-    width=266,
+    margin=dict(l=40, r=20, t=20, b=60),
+    width=286,
     height=250,
-    title=dict(
-        text='My_20',
-        font=dict(size=14, family='Calibri'),
-        x=0.5
-        )
 )
 fmeis2.update_xaxes(
     showticklabels=True, dtick=0.25,
     range=[-1, 1]
-)
-fmeis2.update_yaxes(
-    ticks='',
-    showticklabels=False
 )
 fmeis1.write_image(results_path + '/plots/fitted/ic_confidence/Meus-cir19.svg')
 fmeis2.write_image(results_path + '/plots/fitted/ic_confidence/Meus-my10.svg')
 
-tax_list = ['Meis', 'Meus', 'Seum', 'Teas', 'Raer']
-c = ['rgb(102,194,164)'] * 5
-colors = dict(zip(tax_list, c))
-fmeis1, fmeis2 = gr.plot_ic_confidence('Hyum', tax_list, colors)
+tax_cir = ['Meis', 'Meus', 'Seum']
+tax_my = ['Meis', 'Meus', 'Seum', 'Raer']
+c_cir = ['rgb(102,194,164)'] * len(tax_cir)
+colors_cir = dict(zip(tax_cir, c_cir))
+c_my = ['rgb(102,194,164)'] * len(tax_my)
+colors_my = dict(zip(tax_my, c_my))
+fmeis1, fmeis2 = gr.plot_ic_confidence('Hyum', tax_list = [tax_cir, tax_my], color = [colors_cir, colors_my])
+
 fmeis1.update_layout(
     margin=dict(l=40, r=20, t=20, b=60),
     width=286,
     height=250,
-    title=dict(
-        text='CIR_19',
-        font=dict(size=14, family='Calibri'),
-        x=0.5
-        )
 )
 fmeis1.update_xaxes(
     showticklabels=True, dtick=0.25,
     range=[-1, 1]
 )
 fmeis2.update_layout(
-    margin=dict(l=20, r=20, t=20, b=60),
-    width=266,
+    margin=dict(l=40, r=20, t=20, b=60),
+    width=286,
     height=250,
-    title=dict(
-        text='My_20',
-        font=dict(size=14, family='Calibri'),
-        x=0.5
-        )
 )
 fmeis2.update_xaxes(
     showticklabels=True, dtick=0.25,
     range=[-1, 1]
-)
-fmeis2.update_yaxes(
-    ticks='',
-    showticklabels=False
 )
 fmeis1.write_image(results_path + '/plots/fitted/ic_confidence/Hyum-cir19.svg')
 fmeis2.write_image(results_path + '/plots/fitted/ic_confidence/Hyum-my10.svg')
 
-tax_list = ['Meis', 'Meus', 'Hyum', 'Teas', 'Raer']
-c = ['rgb(102,194,164)'] * 5
-colors = dict(zip(tax_list, c))
-fmeis1, fmeis2 = gr.plot_ic_confidence('Seum', tax_list, colors)
+tax_cir = ['Meis', 'Meus', 'Hyum']
+tax_my = ['Meis', 'Meus', 'Hyum', 'Raer']
+c_cir = ['rgb(102,194,164)'] * len(tax_cir)
+colors_cir = dict(zip(tax_cir, c_cir))
+c_my = ['rgb(102,194,164)'] * len(tax_my)
+colors_my = dict(zip(tax_my, c_my))
+fmeis1, fmeis2 = gr.plot_ic_confidence('Seum', tax_list = [tax_cir, tax_my], color = [colors_cir, colors_my])
+
 fmeis1.update_layout(
     margin=dict(l=40, r=20, t=20, b=60),
     width=286,
     height=250,
-    title=dict(
-        text='CIR_19',
-        font=dict(size=14, family='Calibri'),
-        x=0.5
-        )
 )
 fmeis1.update_xaxes(
     showticklabels=True, dtick=0.25,
     range=[-1, 1]
 )
 fmeis2.update_layout(
-    margin=dict(l=20, r=20, t=20, b=60),
-    width=266,
+    margin=dict(l=40, r=20, t=20, b=60),
+    width=286,
     height=250,
-    title=dict(
-        text='My_20',
-        font=dict(size=14, family='Calibri'),
-        x=0.5
-        )
 )
 fmeis2.update_xaxes(
     showticklabels=True, dtick=0.25,
     range=[-1, 1]
-)
-fmeis2.update_yaxes(
-    ticks='',
-    showticklabels=False
 )
 fmeis1.write_image(results_path + '/plots/fitted/ic_confidence/Seum-cir19.svg')
 fmeis2.write_image(results_path + '/plots/fitted/ic_confidence/Seum-my10.svg')
 
-tax_list = ['Meis', 'Meus', 'Hyum', 'Seum', 'Raer']
-c = ['rgb(102,194,164)'] * 5
-colors = dict(zip(tax_list, c))
-fmeis1, fmeis2 = gr.plot_ic_confidence('Teas', tax_list, colors)
-fmeis1.update_layout(
-    margin=dict(l=40, r=20, t=20, b=60),
-    width=286,
-    height=250,
-    title=dict(
-        text='CIR_19',
-        font=dict(size=14, family='Calibri'),
-        x=0.5
-        )
-)
-fmeis1.update_xaxes(
-    showticklabels=True, dtick=0.25,
-    range=[-1, 1]
-)
-fmeis2.update_layout(
-    margin=dict(l=20, r=20, t=20, b=60),
-    width=266,
-    height=250,
-    title=dict(
-        text='My_20',
-        font=dict(size=14, family='Calibri'),
-        x=0.5
-        )
-)
-fmeis2.update_xaxes(
-    showticklabels=True, dtick=0.25,
-    range=[-1, 1]
-)
-fmeis2.update_yaxes(
-    ticks='',
-    showticklabels=False
-)
-fmeis1.write_image(results_path + '/plots/fitted/ic_confidence/Teas-cir19.svg')
-fmeis2.write_image(results_path + '/plots/fitted/ic_confidence/Teas-my10.svg')
+tax_cir = ['Meis', 'Meus', 'Hyum']
+tax_my = ['Meis', 'Meus', 'Hyum', 'Seum']
+c_cir = ['rgb(102,194,164)'] * len(tax_cir)
+colors_cir = dict(zip(tax_cir, c_cir))
+c_my = ['rgb(102,194,164)'] * len(tax_my)
+colors_my = dict(zip(tax_my, c_my))
+fmeis1, fmeis2 = gr.plot_ic_confidence('Raer', tax_list = [tax_cir, tax_my], color = [colors_cir, colors_my])
 
-tax_list = ['Meis', 'Meus', 'Hyum', 'Seum', 'Teas']
-c = ['rgb(102,194,164)'] * 5
-colors = dict(zip(tax_list, c))
-fmeis1, fmeis2 = gr.plot_ic_confidence('Raer', tax_list, colors)
 fmeis1.update_layout(
     margin=dict(l=40, r=20, t=20, b=60),
     width=286,
     height=250,
-    title=dict(
-        text='CIR_19',
-        font=dict(size=14, family='Calibri'),
-        x=0.5
-        )
 )
 fmeis1.update_xaxes(
     showticklabels=True, dtick=0.25,
     range=[-1, 1]
 )
 fmeis2.update_layout(
-    margin=dict(l=20, r=20, t=20, b=60),
-    width=266,
+    margin=dict(l=40, r=20, t=20, b=60),
+    width=286,
     height=250,
-    title=dict(
-        text='My_20',
-        font=dict(size=14, family='Calibri'),
-        x=0.5
-        )
 )
 fmeis2.update_xaxes(
     showticklabels=True, dtick=0.25,
     range=[-1, 1]
-)
-fmeis2.update_yaxes(
-    ticks='',
-    showticklabels=False
 )
 fmeis1.write_image(results_path + '/plots/fitted/ic_confidence/Raer-cir19.svg')
 fmeis2.write_image(results_path + '/plots/fitted/ic_confidence/Raer-my10.svg')
+
 # %%codecell
 ############ Fit active exchanges from gibbs sampling to a bernoulli distribution ###############
 gr.fit_rxnsdist_to_bernoulli('CIR_19')

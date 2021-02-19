@@ -271,10 +271,10 @@ class gibbs_results():
 
         return fig
 
-    def plot_ic_confidence(self, giver, tax_list, color):
+    def plot_ic_confidence(self, giver, color=[], tax_list=[]):
         a = 0
         fig = go.Figure()
-        for tax in tax_list:
+        for tax in tax_list[0]:
             Y = self.interactions.query("Giver==@giver").query("Reciver==@tax").query("Sample=='CIR_19'").query("`Interaction Coefficient`>@a")['Interaction Coefficient']
             Y_l = self.interactions.query("Giver==@giver").query("Reciver==@tax").query("Sample=='CIR_19'").query("`Interaction Coefficient`<@a")['Interaction Coefficient']
             fit = run_st(Y=Y, L=0, U=1)
@@ -284,7 +284,7 @@ class gibbs_results():
                     x=fit.extract('mu')['mu'] + fit2.extract('mu')['mu'],
                     showlegend=False,
                     name=tax,
-                    line_color=color[tax]
+                    line_color=color[0][tax]
                 )
             )
 
@@ -305,14 +305,14 @@ class gibbs_results():
         fig.add_shape(
             type='line',
             x0=-0.1, y0=0,
-            x1=-0.1, y1=len(tax_list) + 1,
+            x1=-0.1, y1=len(tax_list[0]),
             line=dict(color='Black', dash='dash'),
             xref='x', yref='y'
         )
         fig.add_shape(
             type='line',
             x0=0.1, y0=0,
-            x1=0.1, y1=len(tax_list) + 1,
+            x1=0.1, y1=len(tax_list[0]),
             line=dict(color='Black', dash='dash'),
             xref='x', yref='y'
         )
@@ -323,7 +323,7 @@ class gibbs_results():
         )
 
         fig2 = go.Figure()
-        for tax in tax_list:
+        for tax in tax_list[1]:
             Y = self.interactions.query("Giver==@giver").query("Reciver==@tax").query("Sample=='My_20'").query("`Interaction Coefficient`>@a")['Interaction Coefficient']
             Y_l = self.interactions.query("Giver==@giver").query("Reciver==@tax").query("Sample=='My_20'").query("`Interaction Coefficient`<@a")['Interaction Coefficient']
             fit = run_st(Y=Y, L=0, U=1)
@@ -333,7 +333,7 @@ class gibbs_results():
                     x=fit.extract('mu')['mu'] + fit2.extract('mu')['mu'],
                     showlegend=False,
                     name=tax,
-                    line_color=color[tax]
+                    line_color=color[1][tax]
                 )
             )
 
@@ -354,14 +354,14 @@ class gibbs_results():
         fig2.add_shape(
             type='line',
             x0=-0.1, y0=0,
-            x1=-0.1, y1=len(tax_list),
+            x1=-0.1, y1=len(tax_list[1]),
             line=dict(color='Black', dash='dash'),
             xref='x', yref='y'
         )
         fig2.add_shape(
             type='line',
             x0=0.1, y0=0,
-            x1=0.1, y1=len(tax_list),
+            x1=0.1, y1=len(tax_list[1]),
             line=dict(color='Black', dash='dash'),
             xref='x', yref='y'
         )
